@@ -1,4 +1,4 @@
-"""Offline spectral transients and beat-aligned cues; NumPy only, no network."""
+"""Offline spectral transients and beat positions; NumPy only, no network."""
 from dataclasses import dataclass
 import math
 import numpy as np
@@ -18,7 +18,6 @@ class TrackAnalysis:
     attacks: tuple
     beats: np.ndarray
     bpm: float
-    cues: tuple
     duration: float
 
     def sample(self,time):
@@ -115,20 +114,4 @@ def analyse_track(samples,rate):
             if len(near):beats[i]=times[near[np.argmax(weights[near]*np.exp(-((times[near]-predicted)/(period*.14))**2))]]
     else:beats=np.array([],dtype=float)
     levels=np.clip(levels/reference,0.,1.).astype(np.float32)
-    # Audio determines energy and family; a bounded route keeps the vocabulary rich.
-    routes=((0,4,7,0,5),(1,5,2,3,9),(2,6,8,4,1))
-    cues=[];last=-1
-    phrase_beats=8 if bpm>=110 else 4
-    for beat in range(0,len(beats),phrase_beats):
-        predicted=float(beats[beat])
-        nearest=min(attacks,key=lambda event:abs(event.time-predicted),default=None)
-        if nearest is None or abs(nearest.time-predicted)>period*.21:continue
-        time=nearest.time
-        index=min(frames-1,round(time*fps))
-        profile=levels[max(0,index-round(fps)):min(frames,index+round(fps))].mean(axis=0)
-        if float(profile.max())<.08:continue
-        family=int(np.argmax(profile*np.array((1.,1.,1.10))))
-        route=routes[family];slot=(beat//phrase_beats)%len(route)
-        shape=next((route[(slot+n)%len(route)] for n in range(len(route)) if route[(slot+n)%len(route)]!=last),route[slot])
-        cues.append((time,shape));last=shape
-    return TrackAnalysis(levels,fps,attacks,beats,bpm,tuple(cues),duration)
+    return TrackAnalysis(levels,fps,attacks,beats,bpm,duration)

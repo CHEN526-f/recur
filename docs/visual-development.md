@@ -1,5 +1,35 @@
 # Visual refinement — 26 October 2026
 
+## Python continuous morphogenesis — after the initial source upload
+
+The owner still found the Python artwork to be a repeated preset carousel with
+minor articulation. The runtime preset selectors and their precomputed routes
+have now been removed from the Python music/score path. The ten manual forms
+remain intact; automatic playback keeps its manual target unchanged and drives
+one continuously remodelling construction instead.
+
+Ordered rib indices map onto a mean-centred bent strip. Varying curvature takes
+the strip through open arches and nested spirals. Sector anchors fan related ribs,
+while spacing, aperture, depth, layer screw and petal harmonics change internal
+structure. The main geometry and emerging outer layers share this construction.
+The spectrum and percussion force a smooth Lorenz-type coupled controller with
+musical memory. The first periodic-curvature attempt was rejected after its
+regular opening/closing became apparent in the longer preview. This controller
+has no assigned pose loop or randomized preset choice.
+
+Drum recoil remains scheduled from measured audio. Manual notes add a smaller
+amount of structural articulation while keeping the chosen foundation. Pause
+freezes the controller; silent audio supplies no structural time progression.
+Exposure, metal, glass and bloom are unchanged. Indexed meshes retain the same
+triangles while avoiding repeated work on identical vertices.
+
+The 36-second renderer preview holds one manual target throughout. Geometric
+checks compare normalized pairwise distances, so camera rotation or zoom cannot
+pass as structural change. The actual playback test also asserts one fixed target
+and a developing curvature range. These are development checks, not a confirmed
+retest by the earlier human participant. Older dated sections below document the
+preceding implementations, including their superseded preset behavior.
+
 ## Measured recording playback — 29 October
 
 The default T / DEMO now plays the bundled CC0 recording *Technological Messup*

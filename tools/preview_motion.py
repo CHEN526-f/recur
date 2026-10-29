@@ -52,11 +52,10 @@ def main():
                 gain=np.cos(.45*np.pi/2) if event.deck==0 else np.sin(.45*np.pi/2)
                 renderer.motion.note(event.voice,event.velocity,gain)
                 renderer.climax.note(event.voice,gain*event.velocity)
-            form=performance.form()
-            if form is not None:model.select_shape(form,0);model.select_shape(form,1)
             if tick<round(start*fps):
                 renderer.motion.transport_beat=performance.position/4
                 renderer.motion.update(model,1/fps)
+                renderer.evolution.update(model,renderer.motion,1/fps,selected=True)
                 renderer.climax.score_target=performance.expansion
                 renderer.climax.update(model,1/fps)
                 renderer._last_clock=model.clock;renderer._visual_phase=model.clock
@@ -84,7 +83,7 @@ def main():
         for packet in audio.encode():container.mux(packet)
     finally:container.close();pygame.quit()
     sheet.save(output/'contact.jpg')
-    assert len(forms)>=5 and min(differences)>0.,'The visual timeline did not move'
+    assert len(forms)==1 and min(differences)>0.,'The visual timeline did not move'
     print(f'MOTION OK: {index} frames; {len(forms)} forms; mean adjacent-frame change {np.mean(differences):.2f}/255')
     print(output/'song-motion.mp4')
 

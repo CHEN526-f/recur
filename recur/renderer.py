@@ -5,10 +5,12 @@ import moderngl
 from .crescendo import Crescendo, CrescendoRenderer, smoothstep, ARCHITECTURE
 from .materials import SURFACE_FRAGMENT, beveled_box, polished_rib
 from .motion import MusicalMotion
+from .morphology import Morphogenesis
 
 
 VERTEX = r'''
 #version 330
+#define ORGANIC_EVOLUTION
 in vec3 in_pos; in vec3 in_normal; in float in_material;
 in vec3 in_block; in vec3 in_block_normal;
 uniform mat4 projection; uniform mat4 view;
@@ -16,6 +18,7 @@ uniform float phase; uniform float weights[10]; uniform vec3 bands;
 uniform float energy; uniform float charge; uniform float twist;
 uniform vec2 orbit; uniform vec2 fx; uniform float expansion;
 uniform vec4 motion; uniform vec2 motion_phase;
+uniform float evolution_strength;uniform vec4 evolution_shape;uniform vec4 evolution_detail;uniform vec2 evolution_phase;
 out vec3 world; out vec3 normal; out float material; out float instance;
 const float PI=3.14159265359;
 mat3 rx(float a){float c=cos(a),s=sin(a);return mat3(1,0,0,0,c,s,0,-s,c);}
@@ -99,10 +102,13 @@ class SculptureRenderer:
         if pad:mesh=np.concatenate((mesh,mesh[:pad]))
         blocks=np.tile(block,(len(mesh)//len(block),1))
         combined=np.concatenate((mesh,blocks),axis=1).astype('f4')
-        self.vbo=self.ctx.buffer(combined.tobytes())
-        self.vao=self.ctx.vertex_array(self.program,[(self.vbo,'3f 3f 1f 3f 3f','in_pos','in_normal','in_material','in_block','in_block_normal')])
+        vertices,indices=np.unique(combined,axis=0,return_inverse=True)
+        self.vbo=self.ctx.buffer(vertices.astype('f4').tobytes())
+        self.ibo=self.ctx.buffer(indices.astype('u4').tobytes())
+        self.vao=self.ctx.vertex_array(self.program,[(self.vbo,'3f 3f 1f 3f 3f','in_pos','in_normal','in_material','in_block','in_block_normal')],index_buffer=self.ibo)
         self.climax=Crescendo()
         self.motion=MusicalMotion()
+        self.evolution=Morphogenesis()
         self.climax_renderer=CrescendoRenderer(self.ctx,SURFACE_FRAGMENT)
         self.screen=self.ctx.buffer(np.array([-1,-1,1,-1,-1,1,1,1],dtype='f4').tobytes())
         self.blur=self.ctx.program(vertex_shader=SCREEN_VERTEX,fragment_shader=BLUR)
@@ -159,6 +165,11 @@ class SculptureRenderer:
         self.motion.transport_beat=(music.beat_position if track_playing else
                                     performance.position/4. if performance and performance.playing else None)
         self.motion.update(model,dt)
+        score_playing=bool(performance and performance.playing)
+        selected=bool(performance.auto if score_playing else music and music.path and music.auto)
+        live=.38*max(self.motion.activity,model.charge) if not selected else 1.
+        self.evolution.update(model,self.motion,dt,selected=live,
+                              running=bool(track_playing or score_playing or (not selected and live>.01)))
         self.climax.score_target=(music.expansion if track_playing else
                                   performance.expansion if performance and performance.playing else None)
         self.climax.update(model,dt)
@@ -182,6 +193,10 @@ class SculptureRenderer:
         self.program['bands']=tuple(model.bands)
         self.program['motion']=self.motion.values
         self.program['motion_phase']=self.motion.phases
+        self.program['evolution_strength']=self.evolution.strength
+        self.program['evolution_shape']=tuple(self.evolution.shape)
+        self.program['evolution_detail']=tuple(self.evolution.detail)
+        self.program['evolution_phase']=tuple(self.evolution.phases)
         self.program['camera_position']=(0.,0.,float(-view[2,3]))
         self.program['resolution']=(float(w),float(h));self.program['opaque_scene']=3
         self.opaque_color.use(3)
@@ -192,7 +207,7 @@ class SculptureRenderer:
         for surface_pass in (0,1):
             self.program['surface_pass']=surface_pass
             self.vao.render(instances=648)
-            self.climax_renderer.draw(self.climax,proj,view,self.orbit,self.palette,model.energy,w/stage_h,surface_pass,(float(w),float(h)),model.weights,model.bands,phase,self.motion.values,self.motion.phases)
+            self.climax_renderer.draw(self.climax,proj,view,self.orbit,self.palette,model.energy,w/stage_h,surface_pass,(float(w),float(h)),model.weights,model.bands,phase,self.motion.values,self.motion.phases,self.evolution)
             if surface_pass==0:
                 self.ctx.copy_framebuffer(self.opaque_fbo,self.msaa_fbo)
                 self.msaa_fbo.use();self.ctx.viewport=(0,stage_y,w,stage_h)

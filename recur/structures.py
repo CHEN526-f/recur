@@ -1,5 +1,6 @@
 # The original six silhouettes, plus four optional radial constructions.
 import math
+from .morphology import GLSL as ORGANIC_GLSL
 
 GLSL = r'''
 void legacyFrame(float theta,float band,float phase,int shape,out vec3 p,out mat3 frame,out float size){
@@ -90,8 +91,12 @@ void structure(float theta,float band,float t,vec3 music,float weights[10],float
  center*=1.+music.x*.035+expansion*(.40+band*.14);
  local*=1.+music.z*.08;
  articulate(theta,band,weights,center,local);
+#ifdef ORGANIC_EVOLUTION
+ remodel(theta,band,center,local);
+#endif
 }
 '''
+GLSL=GLSL.replace('void structure(',ORGANIC_GLSL+'\nvoid structure(')
 
 
 def _rotate(p,x=0.,y=0.):

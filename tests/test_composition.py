@@ -41,18 +41,12 @@ class CompositionTests(unittest.TestCase):
         player=Performance();player.octave=1
         self.assertEqual(player.live(1,0).note,normal+12)
 
-    def test_song_moves_through_all_forms_and_supports_manual_takeover(self):
-        player=Performance();player.start();forms=[]
-        for bar in range(32):
-            player.position=bar*16
-            form=player.form()
-            if form is not None:forms.append(form)
-            self.assertIsNone(player.form())
-        self.assertEqual(set(forms),set(range(10)))
-        self.assertGreater(sum(f<6 for f in forms),len(forms)/2)
-        player.set_auto(False);player.position=0
-        self.assertIsNone(player.form())
-        player.set_auto(True);self.assertEqual(player.form(),0)
+    def test_song_supports_manual_takeover_without_resetting_the_score(self):
+        player=Performance();player.start();player.position=123.
+        player.set_auto(False);self.assertFalse(player.auto)
+        self.assertEqual(player.position,123.)
+        player.set_auto(True);self.assertTrue(player.auto)
+        self.assertEqual(player.position,123.)
 
     def test_expansion_follows_sections_and_breathes_inside_the_peak(self):
         player=Performance();player.start();values=[]

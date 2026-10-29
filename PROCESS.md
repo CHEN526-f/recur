@@ -109,6 +109,29 @@ are provided; neither is evidence of the human trial.
 
 ## Submission decision
 
+### Further visual iteration after source upload
+
+The author still found the desktop version repetitive: automatic playback cycled
+presets, each with limited internal movement. This feedback exposed a gap between
+the browser experiment and the submitted Python entry point. The Python renderer
+now has a separate continuous construction engine. It has no preset route or
+phrase-triggered form selector. Curvature, opening, layer spacing, depth, sector
+hinges, screw and petal articulation develop from spectrum/history rather than
+changing a silhouette ID on a timer.
+
+An initial continuous-curvature oscillator still opened and closed too regularly
+in the longer visual check, so it was replaced with a smooth coupled dynamical
+system forced by the measured spectrum and percussion. This is not random
+scattering. The same ordered ribs and sector anchors are retained, while internal
+distances change substantially. All ten earlier shapes remain manual choices.
+Indexed mesh reuse reduces repeated vertex work without removing triangles.
+
+The new geometric checks compare normalized internal distance matrices, so a
+rotation or zoom alone cannot satisfy them. Real playback checks now require a
+fixed manual target and a developing curvature range instead of counting preset
+switches. This is a further author-directed iteration; approval by the earlier
+human trial participant has not been confirmed.
+
 The author chose a public GitHub source repository as the submission, with the
 Python artwork as the primary run target. Website deployment is not part of this
 handoff; the browser experiment is retained and its publication workflow is

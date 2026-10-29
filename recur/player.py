@@ -33,7 +33,7 @@ def run(save,restore):
         pygame.display.set_mode(size,flags,vsync=1);renderer=SculptureRenderer(size)
     except Exception as exc:
         pygame.quit();print('OpenGL 3.3 could not start: '+str(exc));return 1
-    pygame.display.set_caption('RECUR 2 / audiovisual decks')
+    pygame.display.set_caption('RECUR / 环生 — continuous instrument')
     model=Instrument();synth=Synth();ui=Interface();camera=MotionCamera()
     synth.muted=args.mute or args.smoke_test or args.interaction_test or args.music_test or args.rhythm_test
     music=MusicTrack();music.muted=synth.muted;renderer.music=music
@@ -42,7 +42,7 @@ def run(save,restore):
     demo=False;backup=None;backup_music=False;backup_forms=None;toast='';toast_until=0.
     camera_gate=[False]*4;camera_last=[-10.]*4
     smoke_stage=-1;smoke_time=0.;proof=set();frames=0
-    sync_errors=[];rhythm_forms=set();kick_frames=0;rhythm_started=None
+    sync_errors=[];rhythm_forms=set();rhythm_controls=[];kick_frames=0;rhythm_started=None
     if not synth.enabled:toast='Audio unavailable. Visual controls still work.';toast_until=time.monotonic()+7
 
     def notify(text):
@@ -69,7 +69,7 @@ def run(save,restore):
             data=ui.render(size,model,synth,renderer,camera,clock.get_fps(),toast,demo)
             renderer.draw(model,data);pygame.display.flip();pygame.event.pump()
             if demo:action('score')
-            music.load(path);synth.silence();model.playing=False;model.recording=False
+            music.load(path);renderer.evolution.reset();synth.silence();model.playing=False;model.recording=False
             model.paused=False
             notify('自动跟随音乐 / V 暂停 / Y 切换自动与手动')
             return True
@@ -130,7 +130,7 @@ def run(save,restore):
                 backup=([r.copy() for r in model.loop],[r.copy() for r in model.loop_b],model.playing,model.recording,model.crossfade_target)
                 backup_forms=(model.target,model.target_b)
                 model.playing=False;model.recording=False;model.crossfade_target=.45
-                renderer.motion.reset();renderer.climax.reset()
+                renderer.motion.reset();renderer.climax.reset();renderer.evolution.reset()
                 synth.silence();synth.prepare(performance.score);performance.start()
             elif backup:
                 performance.stop();synth.silence()
@@ -223,7 +223,7 @@ def run(save,restore):
                     elif k==pygame.K_p:
                         model.paused=not model.paused;model.release();model.jog[:]=[None,None];synth.silence()
                         music.pause(model.paused)
-                    elif k==pygame.K_BACKSPACE:model.reset();renderer.climax.reset();renderer.motion.reset()
+                    elif k==pygame.K_BACKSPACE:model.reset();renderer.climax.reset();renderer.motion.reset();renderer.evolution.reset()
                     elif k in (pygame.K_1,pygame.K_2,pygame.K_3):renderer.palette=k-pygame.K_1
                     elif k==pygame.K_b:renderer.light_background=not renderer.light_background
                     elif k in (pygame.K_MINUS,pygame.K_EQUALS):synth.volume=max(0.,min(.8,synth.volume+(.05 if k==pygame.K_EQUALS else -.05)))
@@ -283,9 +283,6 @@ def run(save,restore):
                         renderer.motion.note(attack.voice,strength)
                     for band in range(3):model.band_targets[band]=max(model.band_targets[band],measured[band])
                     model.energy_target=max(model.energy_target,sum(measured)/3)
-                    form=music.form(model.bpm)
-                    if form is not None:
-                        model.select_shape(form,0,music.morph_seconds);model.select_shape(form,1,music.morph_seconds)
                 synth.duck=.28 if music.playing else 1.
             notes=model.advance(dt);synth.update(model)
             for index in notes:hit(index,'LOOP',0)
@@ -293,9 +290,6 @@ def run(save,restore):
             if demo:
                 for event in performance.advance(dt,model.bpm,model.paused,model.brake):
                     hit(event.voice,'DEMO',event.deck,event)
-                form=performance.form()
-                if form is not None:
-                    model.select_shape(form,0);model.select_shape(form,1)
                 if performance.done:action('score')
             if camera.active and not model.paused and not ui.show_help:
                 for i,val in enumerate(camera.sample()):
@@ -364,9 +358,11 @@ def run(save,restore):
                     running=False
             if args.rhythm_test:
                 rhythm_forms.add(model.target)
+                rhythm_controls.append(renderer.evolution.shape[0])
                 if time.monotonic()-rhythm_started>=12.:
                     assert len(sync_errors)>15 and kick_frames>5,'Drum motion missing'
-                    assert len(rhythm_forms)>=3,'Automatic construction variety missing'
+                    assert len(rhythm_forms)==1,'Automatic playback cycled manual presets'
+                    assert max(rhythm_controls)-min(rhythm_controls)>.35,'Continuous curvature did not develop'
                     assert max(sync_errors)<.10,(f'Playback/visual delay max {max(sync_errors)*1000:.1f} ms; '
                                                  f'mean {sum(sync_errors)/len(sync_errors)*1000:.1f} ms; '
                                                  f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
@@ -389,7 +385,7 @@ def run(save,restore):
         if args.music_test:print('MUSIC OK: import, measured envelopes, automatic forms, manual takeover, pause, resume, UI')
         if args.rhythm_test:
             print(f'RHYTHM OK: {music.path.name}; {len(sync_errors)} attacks; {kick_frames} kick attacks; '
-                  f'{len(rhythm_forms)} forms; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
+                  f'{len(rhythm_forms)} fixed base; curvature span {max(rhythm_controls)-min(rhythm_controls):.2f}; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
                   f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
     finally:
         camera.stop();music.close();synth.silence();pygame.quit()

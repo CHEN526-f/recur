@@ -47,7 +47,7 @@ class Interface:
         performance=getattr(renderer,'performance',None)
         if demo or (music and music.path):
             auto=performance.auto if demo and performance else music.auto
-            self.button(surf,'auto_music','自动' if auto else '手动',(247,20,65,28),auto)
+            self.button(surf,'auto_music','演化' if auto else '手动',(247,20,65,28),auto)
         if music and music.path:
             if not demo:self.text(surf,music.path.stem[:24],330,27,11,MUTED)
             if not demo and music.analysis:
@@ -161,13 +161,13 @@ class Interface:
                 'R / >         Overdub into selected loop / play or stop loops.',
                 '16 / I        Show the editable loop; A/B choose the deck.',
                 'T / DEMO      Play the CC0 demo; measured drums drive the motion.',
-                'G / LOCAL     Original 32-bar synth score. Shapes also follow phrases.',
+                'G / LOCAL     32-bar score with continuous unfolding and reassembly.',
                 'S / J / Z X   Melodic notes / warm plucks / shift melody octave.',
                 'Q / W         Temporary ring / shutter visual accents.',
                 'ARROWS/WHEEL  Orbit / zoom. 1,2,3 change metal. B: background.',
                 'H / F         Artwork-only view / fullscreen.',
                 'IMPORT / U    Choose music; drag-and-drop also works. Auto starts on.',
-                'V / Y         Pause imported music / toggle song or music auto forms.',
+                'V / Y         Pause imported music / toggle continuous evolution.',
                 'P / M         Pause / mute. E saves PNG + session; O restores.',
                 'C             Optional local camera input. Device 0..3.',
                 'BACKSPACE     Reset controls, preserving your loops.',

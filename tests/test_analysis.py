@@ -28,12 +28,11 @@ class TrackAnalysisTests(unittest.TestCase):
         self.assertLess(max(errors),.025)
         self.assertAlmostEqual(analysis.bpm,128.,delta=2.)
         self.assertTrue(any(e.voice==5 for e in analysis.attacks))
-        self.assertTrue(all(any(abs(time-e.time)<.0001 for e in analysis.attacks) for time,_ in analysis.cues))
         self.assertGreater(np.mean([min(abs(t-e.time) for e in analysis.attacks)<.03 for t in analysis.beats]),.9)
 
     def test_silence_and_sustained_note_do_not_invent_a_drum_pattern(self):
         silence=analyse_track(np.zeros(22050*3),22050)
-        self.assertEqual(silence.attacks,());self.assertEqual(silence.cues,())
+        self.assertEqual(silence.attacks,());self.assertEqual(len(silence.beats),0)
         time=np.arange(22050*4)/22050
         tone=analyse_track(.2*np.sin(2*np.pi*440*time),22050)
         self.assertFalse(any(.2<e.time<3.8 for e in tone.attacks))
@@ -50,20 +49,11 @@ class TrackAnalysisTests(unittest.TestCase):
         self.assertEqual(played,list(analysis.attacks))
         track.paused=True;self.assertEqual(track.take_attacks(),[])
 
-    def test_morph_prepares_before_audio_accent_and_lands_on_it(self):
+    def test_auto_control_does_not_change_the_playback_position(self):
         data,_=drum_track();analysis=analyse_track(data,22050)
         track=MusicTrack();track.analysis=analysis;track.levels=analysis.levels
-        model=Instrument();landings=[]
-        for frame in range(16*120):
-            track._position=frame/120
-            form=track.form()
-            if form is not None:
-                target=track._position+track.morph_seconds
-                model.select_shape(form,0,track.morph_seconds)
-                landings.append((target,form))
-            model.advance(1/120)
-            for target,form in landings:
-                if target<=track._position<target+1/120:
-                    self.assertAlmostEqual(model.morph[form],1.,places=5)
-        self.assertGreater(len(landings),2)
-        self.assertTrue(all(any(abs(time-beat)<.001 for beat in analysis.beats) for time,_ in landings[1:]))
+        track._position=7.25
+        track.set_auto(False);self.assertFalse(track.auto)
+        track.set_auto(True);self.assertTrue(track.auto)
+        self.assertEqual(track._position,7.25)
+        self.assertIs(track.analysis,analysis)

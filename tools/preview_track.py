@@ -39,8 +39,8 @@ def main():
     video=container.add_stream('libx264',rate=fps);video.width,video.height=size
     video.pix_fmt='yuv420p';video.options={'crf':'19','preset':'fast'}
     audio=container.add_stream('aac',rate=44100);audio.layout='stereo';audio.bit_rate=192000
-    sheet=Image.new('RGB',(1440,480),'#090b0c');draw=ImageDraw.Draw(sheet)
-    checkpoints=(.12,.45,3.7,6.,9.,12.,15.,18.)
+    checkpoints=tuple(t for t in (.12,.45,3.7,6.,9.,12.,15.,18.,21.,25.,29.,34.) if t<seconds)
+    sheet=Image.new('RGB',(1440,240*((len(checkpoints)+3)//4)),'#090b0c');draw=ImageDraw.Draw(sheet)
     proof=0;forms=set();attacks=0
     try:
         for index in range(round(seconds*fps)):
@@ -49,9 +49,6 @@ def main():
             renderer.climax.music_level=sum(a*b for a,b in zip(measured,(.2,.35,.45)))
             for event in music.take_attacks():
                 renderer.motion.note(event.voice,(.45+.55*event.strength)*np.exp(-(time-event.time)*9.));attacks+=1
-            form=music.form()
-            if form is not None:
-                model.select_shape(form,0,music.morph_seconds);model.select_shape(form,1,music.morph_seconds)
             for i in range(3):model.band_targets[i]=max(model.band_targets[i],measured[i])
             model.energy_target=max(model.energy_target,sum(measured)/3)
             model.advance(1/fps);renderer.draw(model,overlay);forms.add(model.target)
@@ -62,7 +59,7 @@ def main():
             if proof<len(checkpoints) and time>=checkpoints[proof]:
                 im=Image.fromarray(pixels);im.save(output.with_name(f'{output.stem}-{proof+1}.png'))
                 im.thumbnail((356,212));x=(proof%4)*360;y=(proof//4)*240
-                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s / form {model.target}',fill='#e5d9ad')
+                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s / curvature {renderer.evolution.shape[0]:.2f}',fill='#e5d9ad')
                 proof+=1
             pygame.display.flip()
         for packet in video.encode():container.mux(packet)
@@ -74,7 +71,7 @@ def main():
         for packet in audio.encode():container.mux(packet)
     finally:container.close();music.close();pygame.quit()
     sheet.save(output.with_suffix('.jpg'))
-    print(f'TRACK PREVIEW OK: {seconds:.1f}s; {len(forms)} forms; {attacks} measured attacks; {output}')
+    print(f'TRACK PREVIEW OK: {seconds:.1f}s; {len(forms)} fixed base; continuous geometry; {attacks} measured attacks; {output}')
 
 
 if __name__=='__main__':main()

@@ -13,7 +13,7 @@ account**, through Canvas. Due: **2026-11-01 23:59 Hong Kong time**.
 
 | Requirement | Current evidence / remaining author task |
 |---|---|
-| Deliberate input → meaningful response → clear feedback | Music import, live keys, tension hold/release and direct structure controls in browser; Python prototype also retained |
+| Deliberate input → meaningful response → clear feedback | Python music import, live keys, tension release, XY control of curvature/torsion/depth and continuous structure; browser experiment retained optionally |
 | Handle an ordinary interruption/error | Invalid import leaves existing music intact; missing demo gives an import alternative; repeated load guarded; missing local session gives feedback |
 | Working source and necessary assets | `web/dist` has buildless browser code and licensed demo; Python source and metadata retained |
 | README, screenshot, exact run instructions | Root README plus `web/README.md`; screenshots record actual development views |

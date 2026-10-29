@@ -57,10 +57,12 @@ from .structures import GLSL as ARCHITECTURE
 
 VERTEX = r'''
 #version 330
+#define ORGANIC_EVOLUTION
 in vec3 in_pos;in vec3 in_normal;in float in_material;
 uniform mat4 projection;uniform mat4 view;
 uniform float expansion;uniform float phase;uniform float weights[10];uniform vec3 bands;
 uniform vec4 motion;uniform vec2 motion_phase;
+uniform float evolution_strength;uniform vec4 evolution_shape;uniform vec4 evolution_detail;uniform vec2 evolution_phase;
 uniform vec2 orbit;
 out vec3 world;out vec3 normal;out float material;out float instance;
 const float PI=3.14159265359;
@@ -73,6 +75,8 @@ void main(){
  vec3 center;mat3 local;float size;
  structure(theta,band,phase,bands,weights,expansion,center,local,size);
  float emerge=smoothstep(.02,.85,expansion);
+ float hierarchy=1.-smoothstep(3.+evolution_detail.w*5.,4.+evolution_detail.w*5.,band);
+ emerge=mix(emerge,hierarchy,evolution_strength);
  // The outer rings emerge behind the same mechanism, preserving angular order.
  center.xy*=.86+.14*emerge;
  center.z-=(1.-emerge)*2.8;
@@ -117,13 +121,15 @@ def blade_mesh():
 class CrescendoRenderer:
     def __init__(self, ctx, fragment_shader):
         self.program = ctx.program(vertex_shader=VERTEX, fragment_shader=fragment_shader)
-        self.vbo = ctx.buffer(blade_mesh().tobytes())
+        vertices,indices=np.unique(blade_mesh(),axis=0,return_inverse=True)
+        self.vbo = ctx.buffer(vertices.astype('f4').tobytes())
+        self.ibo = ctx.buffer(indices.astype('u4').tobytes())
         self.vao = ctx.vertex_array(self.program, [
             (self.vbo, '3f 3f 1f', 'in_pos', 'in_normal', 'in_material')
-        ])
+        ],index_buffer=self.ibo)
 
-    def draw(self, state, projection, view, orbit, palette, energy, aspect, surface_pass=0, resolution=(1280,820), weights=None, bands=None, phase=0., motion=(0.,0.,0.,0.), motion_phase=(0.,0.)):
-        if state.amount < .008:
+    def draw(self, state, projection, view, orbit, palette, energy, aspect, surface_pass=0, resolution=(1280,820), weights=None, bands=None, phase=0., motion=(0.,0.,0.,0.), motion_phase=(0.,0.), evolution=None):
+        if state.amount < .008 and (evolution is None or evolution.strength<.008):
             return
         self.program['projection'].write(projection.T.tobytes())
         self.program['view'].write(view.T.tobytes())
@@ -137,5 +143,9 @@ class CrescendoRenderer:
             if name in self.program:
                 self.program[name].value = value
         self.program['weights'].write(np.asarray(weights or [1.]+[0.]*9,dtype='f4').tobytes())
+        self.program['evolution_strength']=evolution.strength if evolution else 0.
+        self.program['evolution_shape']=tuple(evolution.shape) if evolution else (.42,.45,.65,.35)
+        self.program['evolution_detail']=tuple(evolution.detail) if evolution else (.3,0.,.4,.5)
+        self.program['evolution_phase']=tuple(evolution.phases) if evolution else (0.,0.)
         self.vao.render(instances=1296)
 

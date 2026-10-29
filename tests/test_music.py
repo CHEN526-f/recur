@@ -25,22 +25,12 @@ class MusicTests(unittest.TestCase):
         self.assertTrue(np.isfinite(levels).all())
         self.assertEqual(float(levels.max()),0.)
 
-    def test_automatic_forms_respond_to_spectrum_and_wait_between_changes(self):
-        track=MusicTrack()
-        track.levels=np.tile([.9,.1,.05],(360,1)).astype(np.float32)
-        self.assertIn(track.form(),(0,4,7))
-        track._position=1.
-        self.assertIsNone(track.form())
-        track.levels[:]=[.08,.15,.95];track._position=4.
-        self.assertIn(track.form(),(2,6,8))
-        track.set_auto(False);track._position=8.
-        self.assertIsNone(track.form())
-        track.set_auto(True)
-        self.assertIn(track.form(),(2,6,8))
-
-    def test_automatic_forms_hold_during_silence(self):
-        track=MusicTrack();track.levels=np.zeros((180,3),dtype=np.float32)
-        self.assertIsNone(track.form())
+    def test_automatic_evolution_can_be_disabled_without_changing_audio(self):
+        track=MusicTrack();track._position=8.;track.running=True
+        track.set_auto(False);self.assertFalse(track.auto)
+        track.set_auto(True);self.assertTrue(track.auto)
+        self.assertEqual(track._position,8.)
+        self.assertTrue(track.playing)
 
     def test_local_playback_pause_and_failed_load_preserves_track(self):
         pygame.mixer.init(44100,-16,2,512)

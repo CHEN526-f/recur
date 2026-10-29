@@ -37,6 +37,10 @@ WebGL2, Web Audio and Workers without third-party runtime JavaScript packages.
 
 ## AI assistance
 
+The continuous structural controller uses standard Lorenz-type differential
+equations, modulated by audio. The numerical integration, music mapping and
+construction code are project implementations; no simulation code was copied.
+
 OpenAI Codex assisted with interpretation of the brief, code, geometry and
 material implementation, sound synthesis, debugging, automated checks and
 documentation. This is substantial assistance; the project is not described as

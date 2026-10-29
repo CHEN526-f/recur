@@ -29,7 +29,7 @@ musical attack is heard.
 
 ![Actual Python application with its controls](docs/python-preview.png)
 
-[20-second program-rendered preview with demo music](docs/demo.mp4). This preview
+[36-second program-rendered preview with demo music](docs/demo.mp4). This preview
 shows the renderer; it is not a recording of the human trial. If OpenGL is not
 available, the image and clip illustrate the result, but do not replace running
 the interaction for implementation assessment.
@@ -92,8 +92,9 @@ drums, bass and melody; the app does not add a synthetic drum track over it.
 DEMO and imported tracks use the same offline analysis: 100 Hz spectral flux,
 short-window attack refinement and adaptive thresholds locate the actual
 transients. Measured attacks trigger recoil and fin motion against the audio
-playback clock. Beat estimation guides phrase flow, while construction morphs
-start before selected accents and finish on them. The program does not need a
+playback clock. Smoothed spectrum and cumulative attacks drive a continuously
+developing construction, without selecting a new manual preset every few beats.
+The program does not need a
 manually entered BPM for imported music. Clear percussion gives the most reliable
 timing; inferred tempo and beat positions can be ambiguous in beatless or complex
 recordings. Visual timing is limited by the display frame rate and audio device.
@@ -106,14 +107,22 @@ track if it was playing before. Live S/J notes and D/K accompaniment follow the
 same harmonic palette. Each instrument has independent polyphony so melodic
 notes cannot cut off the drum or bass channels.
 
-LOCAL automatically morphs between constructions every two bars, covering all
-ten forms with a majority of the original six. Drum attacks drive visible recoil,
-melodic envelopes drive travelling folds and layer twisting, and high frequencies
-hinge the fins. Section and phrase envelopes open and close the sculpture rather
-than holding it at maximum expansion. Y / Auto toggles form selection; pressing
-a shape key takes over manually while articulation continues. Stopping LOCAL
-restores the previous forms. Imported music uses measured rises in its frequency
-envelopes for the same articulation; its drum pulses are not synthesized from BPM.
+DEMO, imported tracks and LOCAL now use **continuous morphogenesis**. A shared
+indexed set of ribs bends from a long arc into nested spirals, opens into hinged
+sectors, separates layers in depth and fans the fins. Eight smoothed construction
+parameters are driven by the spectrum and a coupled continuous system that
+retains musical history. They are not a timed sequence of the ten preset shapes.
+Changing curvature also changes internal distances and relative arrangement along the
+shared ordered paths; this is more than rotating the object or scaling it to the
+beat. Layer density and overall reach grow with the musical energy.
+
+The ten shapes remain manual starting points. Y / 演化 toggles automatic
+development; shape keys take over while a smaller live articulation retains the
+chosen silhouette. Stopping LOCAL restores the previous chosen forms and loops.
+P freezes the geometry; silent passages do not invent new motion. Existing metal,
+glass, exposure and bloom settings are retained.
+
+![Continuous development while the manual target stays fixed](docs/evolution-sequence.jpg)
 
 Generate a WAV preview of the authored score with
 `uv run python tools/render_song.py`; files are written to `captures/recur-song.wav`
@@ -152,7 +161,8 @@ The external-camera path has **not yet been tested with the user's hardware**.
 - `recur/audio.py`: six original NumPy-generated stereo patches and a bass drop.
 - `recur/composition.py`: pitched live notes, four harmonies and a 32-bar score.
 - `recur/motion.py`: transient envelopes and continuous musical articulation.
-- `recur/analysis.py`: measured attacks, tempo estimation and beat-aligned form cues.
+- `recur/morphology.py`: musical structural history, continuous construction and its CPU/shader counterparts.
+- `recur/analysis.py`: measured attacks and tempo/beat estimation; no preset routes.
 - `recur/camera.py`: optional local motion input on a background thread.
 - `recur/ui.py`: interface rendered by Pygame and composited over the 3D scene.
 - `tests/`: state, loop, export validation and sound-array tests.
@@ -182,9 +192,8 @@ of the opaque scene; it does not trace multiple glass layers or off-screen objec
 Use the visible **导入音乐** button (U), drop a local WAV/MP3/OGG/FLAC file into
 the app, or launch with `uv run python app.py --music "path/to/track.mp3"`.
 Playback and automatic following start on import. Measured low/mid/high envelopes
-drive the structure; spectral balance and musical accents guide form selection
-with several beats between major changes. Y or the
-Auto/Manual button toggles automatic selection; shape keys take over manually.
+drive the continuously developing structure. Y or the 演化/手动 button toggles
+automatic development; shape keys take over manually.
 There is no automatic pitch recognition,
 hand tracking or in-app video export. The loop is one bar; recording is note quantization,
 not a recording of the desktop microphone. Exported files are ignored by Git.
@@ -206,7 +215,7 @@ the current track available and displays feedback. Empty or corrupt session data
 is rejected without replacing the current loop. Camera and audio-device failures
 also leave visual controls available.
 
-Automated development checks: 39 Python unit tests, ten-form OpenGL smoke test,
+Automated development checks: 43 Python unit tests, ten-form OpenGL smoke test,
 keyboard/loop/save/restore interaction check, and separate demo/import rhythm
 checks. These checks do not establish musical preference or replace the human
 trial described in PROCESS.md. On the development computer, both music playback

@@ -1,6 +1,5 @@
 """Local music playback and measured low/mid/high envelopes. No remote services."""
 from pathlib import Path
-import bisect
 import math
 import numpy as np
 import pygame
@@ -37,9 +36,8 @@ class MusicTrack:
     def __init__(self):
         self.path=None;self.levels=None;self.duration=0.;self.running=False;self.paused=False
         self.volume=.50;self.muted=False;self._position=0.;self._form=-1
-        self.auto=True;self._last_form=None;self._last_change=-100.;self._last_profile=None
-        self.analysis=None;self.fps=30.;self._attack_cursor=0;self._cue_cursor=0
-        self.morph_seconds=.30
+        self.auto=True
+        self.analysis=None;self.fps=30.;self._attack_cursor=0
 
     @property
     def playing(self):
@@ -58,9 +56,9 @@ class MusicTrack:
         # Only replace the current track after decoding and analysis have succeeded.
         pygame.mixer.music.load(str(path))
         self.path=path;self.duration=duration;self.levels=analysis.levels
-        self.analysis=analysis;self.fps=analysis.fps;self._attack_cursor=0;self._cue_cursor=0
+        self.analysis=analysis;self.fps=analysis.fps;self._attack_cursor=0
         self._form=-1;self._position=0.;self.paused=False;self.running=True
-        self.auto=True;self._last_form=None;self._last_change=-100.;self._last_profile=None
+        self.auto=True
         pygame.mixer.music.set_volume(0. if self.muted else self.volume)
         pygame.mixer.music.play()
 
@@ -74,7 +72,7 @@ class MusicTrack:
         if not self.path:return
         if not self.running:
             pygame.mixer.music.play();self.running=True;self.paused=False;self._form=-1
-            self._position=0.;self._attack_cursor=0;self._cue_cursor=0
+            self._position=0.;self._attack_cursor=0
         else:self.pause(not self.paused)
 
     def sample(self):
@@ -114,47 +112,6 @@ class MusicTrack:
 
     def set_auto(self,value):
         self.auto=bool(value)
-        if self.auto:self._last_change=-100.
-        if self.auto and self.analysis:
-            self._cue_cursor=max(0,bisect.bisect_right([time for time,_ in self.analysis.cues],self._position)-1)
-
-    def form(self,bpm=None):
-        # Spectrum/section response, with enough dwell for each construction to settle.
-        if not self.auto or self.levels is None:return None
-        if self.analysis:
-            lead=min(.32,60/self.bpm*.65);cues=self.analysis.cues
-            if self._cue_cursor>=len(cues) or cues[self._cue_cursor][0]>self._position+lead:return None
-            cue=cues[self._cue_cursor];self._cue_cursor+=1
-            while self._cue_cursor<len(cues) and cues[self._cue_cursor][0]<=self._position:
-                cue=cues[self._cue_cursor];self._cue_cursor+=1
-            time,shape=cue
-            if time<self._position:
-                future=[event.time for event in self.analysis.attacks if event.time>self._position+.05]
-                if not future:return None
-                time=future[0]
-            self.morph_seconds=max(.05,time-self._position)
-            return shape
-        end=min(len(self.levels),int(self._position*self.fps)+1)
-        window=self.levels[max(0,end-75):end]
-        if not len(window):return None
-        profile=window.mean(axis=0)
-        if float(profile.max())<.08:return None
-        age=self._position-self._last_change
-        change=1. if self._last_profile is None else float(np.abs(profile-self._last_profile).mean())
-        if age<3.2 or (change<.12 and age<7.5):return None
-        low,mid,high=profile.tolist()
-        transients=float(np.abs(np.diff(window,axis=0)).mean()) if len(window)>1 else 0.
-        if high>max(low,mid)*1.12:
-            candidates=(2,6,8) if high>.60 else (2,6)
-        elif low>mid*1.15:
-            candidates=(0,4,7) if low>.72 else (0,4)
-        elif transients>.075:
-            candidates=(3,9,5)
-        else:
-            candidates=(1,5,2)
-        chosen=next((form for form in candidates if form!=self._last_form),candidates[0])
-        self._last_form=chosen;self._last_change=self._position;self._last_profile=profile.copy()
-        return chosen
 
     def close(self):
         if pygame.mixer.get_init():pygame.mixer.music.stop();pygame.mixer.music.unload()

@@ -22,8 +22,6 @@ CHORDS = (
 )
 SECTIONS = ((0,'INTRO'),(4,'THEME'),(12,'BUILD'),(16,'PEAK'),(24,'BREAK'),(28,'OUTRO'))
 BAR_COUNT = 32
-# Two bars per phrase. Open, asymmetrical originals remain most of the vocabulary.
-SONG_FORMS = (0,1,5,2,4,9,3,5,6,2,7,8,1,5,4,0)
 
 
 def harmony(bar):
@@ -79,7 +77,7 @@ class Performance:
     def __init__(self):
         self.score=build_score();self.position=0.;self._tick=-1
         self.playing=False;self.done=False;self.octave=0;self.counters=[0]*6
-        self.auto=True;self._visual_phrase=-1
+        self.auto=True
         self._events={}
         for note in self.score:self._events.setdefault(note.tick,[]).append(note)
 
@@ -97,20 +95,13 @@ class Performance:
 
     def start(self):
         self.position=0.;self._tick=-1;self.done=False;self.playing=True
-        self.auto=True;self._visual_phrase=-1
+        self.auto=True
 
     def stop(self):
         self.playing=False
 
     def set_auto(self,value):
         self.auto=bool(value)
-        if self.auto:self._visual_phrase=-1
-
-    def form(self):
-        phrase=self.bar//2
-        if not self.playing or not self.auto or phrase==self._visual_phrase:return None
-        self._visual_phrase=phrase
-        return SONG_FORMS[phrase]
 
     @property
     def expansion(self):
