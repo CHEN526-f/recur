@@ -16,9 +16,11 @@ class MusicalMotion:
         self.transport_beat=None
         self.values=(0.,0.,0.,0.)
         self.phases=(0.,0.)
+        self.voice_totals=[0.]*6
 
     def note(self,voice,velocity=1.,gain=1.):
         amount=max(0.,min(1.,velocity*gain))
+        self.voice_totals[voice]+=amount
         band=(0,2,1,1,0,2)[voice]
         self.pulses[band]=max(self.pulses[band],amount)
         if voice==0:self._kick=max(self._kick,amount)
@@ -52,4 +54,5 @@ class MusicalMotion:
         self._kick=self.activity=self.travel=0.
         self.beat=0.;self.phases=(0.,0.)
         self.transport_beat=None;self.values=(0.,0.,0.,0.)
+        self.voice_totals[:]=[0.]*6
 

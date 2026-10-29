@@ -63,6 +63,7 @@ uniform mat4 projection;uniform mat4 view;
 uniform float expansion;uniform float phase;uniform float weights[10];uniform vec3 bands;
 uniform vec4 motion;uniform vec2 motion_phase;
 uniform float evolution_strength;uniform vec4 evolution_shape;uniform vec4 evolution_detail;uniform vec2 evolution_phase;
+uniform sampler2D organism_pose;
 uniform vec2 orbit;
 out vec3 world;out vec3 normal;out float material;out float instance;
 const float PI=3.14159265359;
@@ -144,8 +145,9 @@ class CrescendoRenderer:
                 self.program[name].value = value
         self.program['weights'].write(np.asarray(weights or [1.]+[0.]*9,dtype='f4').tobytes())
         self.program['evolution_strength']=evolution.strength if evolution else 0.
-        self.program['evolution_shape']=tuple(evolution.shape) if evolution else (.42,.45,.65,.35)
-        self.program['evolution_detail']=tuple(evolution.detail) if evolution else (.3,0.,.4,.5)
-        self.program['evolution_phase']=tuple(evolution.phases) if evolution else (0.,0.)
+        for name,value in (('evolution_shape',tuple(evolution.shape) if evolution else (.42,.45,.65,.35)),
+                           ('evolution_detail',tuple(evolution.detail) if evolution else (.3,0.,.4,.5)),
+                           ('evolution_phase',tuple(evolution.phases) if evolution else (0.,0.)),('organism_pose',5)):
+            if name in self.program:self.program[name].value=value
         self.vao.render(instances=1296)
 

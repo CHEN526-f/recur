@@ -81,6 +81,9 @@ void articulate(float theta,float band,float weights[10],inout vec3 p,inout mat3
 void structure(float theta,float band,float t,vec3 music,float weights[10],float expansion,
                out vec3 center,out mat3 local,out float size){
  center=vec3(0.);local=mat3(0.);size=1.;
+#ifdef ORGANIC_EVOLUTION
+ if(evolution_strength>.9999){remodel(theta,band,center,local);return;}
+#endif
  for(int k=0;k<10;k++){
    if(weights[k]<.00001)continue;
    vec3 p;mat3 frame;float moduleSize;

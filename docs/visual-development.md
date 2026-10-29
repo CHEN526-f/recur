@@ -1,4 +1,24 @@
-# Visual refinement — 26 October 2026
+# Visual refinement — iteration log
+
+## Articulated hierarchy — 30 October 2026
+
+The next critique was that continuous global bending still read as a few familiar
+outlines. The current Python version therefore adds six parent branches and
+three child fans per parent across up to nine layers. Parent folding/stretching,
+child winding/roll/growth and a locally varying spine are separate motions.
+Distinct initial joint states avoid synchronized unfolding. Measured notes apply
+forces to overlapping regions, then damped joints settle them. Drum attacks also
+fold alternating parent joints and open the fins immediately.
+
+The first hierarchical render had conspicuous gaps. Joint influence now fades
+at shared edges so neighboring groups remain joined. The previous global-strip
+shader was removed. The CPU computes instance centers and orthonormal frames
+once; both surface passes read the same floating-point pose texture. Tests use
+these actual poses, rather than a separate obsolete path formula.
+
+The one-minute preview shows the current automatic construction. Original manual
+forms, restrained bloom, metal and limited glass remain available. The following
+sections record earlier approaches and their limitations.
 
 ## Python continuous morphogenesis — after the initial source upload
 
@@ -23,7 +43,7 @@ freezes the controller; silent audio supplies no structural time progression.
 Exposure, metal, glass and bloom are unchanged. Indexed meshes retain the same
 triangles while avoiding repeated work on identical vertices.
 
-The 36-second renderer preview holds one manual target throughout. Geometric
+The preceding 36-second renderer preview held one manual target throughout. Geometric
 checks compare normalized pairwise distances, so camera rotation or zoom cannot
 pass as structural change. The actual playback test also asserts one fixed target
 and a developing curvature range. These are development checks, not a confirmed

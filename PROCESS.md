@@ -132,6 +132,31 @@ fixed manual target and a developing curvature range instead of counting preset
 switches. This is a further author-directed iteration; approval by the earlier
 human trial participant has not been confirmed.
 
+The author again reported that the result still looked like a few whole shapes
+with small motions. The next iteration therefore changed the internal mechanism,
+not just the amplitude of the previous controller. Six parent branches now each
+contain three child fans, across up to nine rib layers. Independent damped joints
+control winding, folding, roll and growth. The spine integrates a nonuniform
+tangent field influenced by branch states. Early renders exposed conspicuous
+breaks between branch groups; fading transforms at shared edges improved their
+connection. Broad note-dependent force fields distribute attacks across branches.
+Metal, glass and restrained exposure remain in place, and all ten manual forms
+remain available.
+
+The geometric tests now inspect the actual instance poses uploaded to the GPU,
+including orthonormal frames, independent child motion and different responses
+to different note histories at the same current loudness. Real playback also
+checks child-joint movement. A one-minute render with the bundled recording is
+provided for longer visual inspection. This is still author-directed iteration;
+no new participant approval is claimed.
+
+Verification on 30 October: 46 unit tests passed, the OpenGL smoke run exercised
+all ten manual forms, and keyboard/loop/session and import/takeover checks passed.
+Separate twelve-second playback runs measured 57.8 FPS for the bundled demo and
+59.3 FPS for a second local recording. Mean/max transient scheduling lateness was
+9.9/24.7 ms and 8.9/20.9 ms respectively. This measures event dispatch relative to
+playback time, not end-to-end speaker/display latency or beat-estimation accuracy.
+
 The author chose a public GitHub source repository as the submission, with the
 Python artwork as the primary run target. Website deployment is not part of this
 handoff; the browser experiment is retained and its publication workflow is

@@ -39,7 +39,7 @@ def main():
     video=container.add_stream('libx264',rate=fps);video.width,video.height=size
     video.pix_fmt='yuv420p';video.options={'crf':'19','preset':'fast'}
     audio=container.add_stream('aac',rate=44100);audio.layout='stereo';audio.bit_rate=192000
-    checkpoints=tuple(t for t in (.12,.45,3.7,6.,9.,12.,15.,18.,21.,25.,29.,34.) if t<seconds)
+    checkpoints=tuple(np.linspace(min(1.,seconds*.15),max(.1,seconds-1.),12))
     sheet=Image.new('RGB',(1440,240*((len(checkpoints)+3)//4)),'#090b0c');draw=ImageDraw.Draw(sheet)
     proof=0;forms=set();attacks=0
     try:
@@ -59,7 +59,7 @@ def main():
             if proof<len(checkpoints) and time>=checkpoints[proof]:
                 im=Image.fromarray(pixels);im.save(output.with_name(f'{output.stem}-{proof+1}.png'))
                 im.thumbnail((356,212));x=(proof%4)*360;y=(proof//4)*240
-                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s / curvature {renderer.evolution.shape[0]:.2f}',fill='#e5d9ad')
+                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s',fill='#e5d9ad')
                 proof+=1
             pygame.display.flip()
         for packet in video.encode():container.mux(packet)

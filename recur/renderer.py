@@ -19,6 +19,7 @@ uniform float energy; uniform float charge; uniform float twist;
 uniform vec2 orbit; uniform vec2 fx; uniform float expansion;
 uniform vec4 motion; uniform vec2 motion_phase;
 uniform float evolution_strength;uniform vec4 evolution_shape;uniform vec4 evolution_detail;uniform vec2 evolution_phase;
+uniform sampler2D organism_pose;
 out vec3 world; out vec3 normal; out float material; out float instance;
 const float PI=3.14159265359;
 mat3 rx(float a){float c=cos(a),s=sin(a);return mat3(1,0,0,0,c,s,0,-s,c);}
@@ -31,8 +32,12 @@ void main(){
  structure(theta,band,phase,bands,weights,expansion,center,local,size);
  local=local*ry(twist*.22+charge*.13);
  float blockMix=weights[3]+weights[9];
- vec3 pos=mix(in_pos,in_block,blockMix);
- vec3 norm=normalize(mix(in_normal,in_block_normal,blockMix)+vec3(.000001));
+ float plate=texelFetch(organism_pose,ivec2(int(mod(id,216.)),int(band)*4),0).w;
+ blockMix=mix(blockMix,plate,evolution_strength);
+ vec3 block=in_block;block.y*=mix(1.,.10,evolution_strength);
+ vec3 blockNormal=in_block_normal*vec3(1.,mix(1.,10.,evolution_strength),1.);
+ vec3 pos=mix(in_pos,block,blockMix);
+ vec3 norm=normalize(mix(in_normal,blockNormal,blockMix)+vec3(.000001));
  center*=1.+(fx.y-.3)*.12;
  float opening=smoothstep(0.,.8,expansion);
  mat3 rotation=rx(orbit.y*(1.-opening*.7))*ry(orbit.x*(1.-opening*.7));
@@ -109,6 +114,9 @@ class SculptureRenderer:
         self.climax=Crescendo()
         self.motion=MusicalMotion()
         self.evolution=Morphogenesis()
+        self.pose_texture=self.ctx.texture((216,36),4,data=bytes(216*36*16),dtype='f4')
+        self.pose_texture.filter=(moderngl.NEAREST,moderngl.NEAREST)
+        self.pose_texture.repeat_x=self.pose_texture.repeat_y=False
         self.climax_renderer=CrescendoRenderer(self.ctx,SURFACE_FRAGMENT)
         self.screen=self.ctx.buffer(np.array([-1,-1,1,-1,-1,1,1,1],dtype='f4').tobytes())
         self.blur=self.ctx.program(vertex_shader=SCREEN_VERTEX,fragment_shader=BLUR)
@@ -173,6 +181,10 @@ class SculptureRenderer:
         self.climax.score_target=(music.expansion if track_playing else
                                   performance.expansion if performance and performance.playing else None)
         self.climax.update(model,dt)
+        if self.evolution.strength>.00001:
+            pose=self.evolution.organism.build(self.evolution,self.motion,self.climax.amount)
+            self.pose_texture.write(pose.tobytes())
+        self.pose_texture.use(5)
         self.zoom=ease(self.zoom,self.zoom_target,6.,dt)
         for i in (0,1):self.orbit[i]=ease(self.orbit[i],self.orbit_target[i],6.,dt)
         # The stage itself opens continuously to the display edges during a climax.
@@ -194,9 +206,10 @@ class SculptureRenderer:
         self.program['motion']=self.motion.values
         self.program['motion_phase']=self.motion.phases
         self.program['evolution_strength']=self.evolution.strength
-        self.program['evolution_shape']=tuple(self.evolution.shape)
-        self.program['evolution_detail']=tuple(self.evolution.detail)
-        self.program['evolution_phase']=tuple(self.evolution.phases)
+        for name,value in (('evolution_shape',tuple(self.evolution.shape)),
+                           ('evolution_detail',tuple(self.evolution.detail)),
+                           ('evolution_phase',tuple(self.evolution.phases)),('organism_pose',5)):
+            if name in self.program:self.program[name].value=value
         self.program['camera_position']=(0.,0.,float(-view[2,3]))
         self.program['resolution']=(float(w),float(h));self.program['opaque_scene']=3
         self.opaque_color.use(3)

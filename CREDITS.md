@@ -40,6 +40,10 @@ WebGL2, Web Audio and Workers without third-party runtime JavaScript packages.
 The continuous structural controller uses standard Lorenz-type differential
 equations, modulated by audio. The numerical integration, music mapping and
 construction code are project implementations; no simulation code was copied.
+The branch hierarchy, damped joint integration, tangent-field spine and pose
+texture are implemented in this repository. Reference imagery informed the
+desired richness and material direction; its meshes and footage are not assets
+in the artwork.
 
 OpenAI Codex assisted with interpretation of the brief, code, geometry and
 material implementation, sound synthesis, debugging, automated checks and

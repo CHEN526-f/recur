@@ -29,7 +29,7 @@ musical attack is heard.
 
 ![Actual Python application with its controls](docs/python-preview.png)
 
-[36-second program-rendered preview with demo music](docs/demo.mp4). This preview
+[60-second program-rendered preview with demo music](docs/demo.mp4). This preview
 shows the renderer; it is not a recording of the human trial. If OpenGL is not
 available, the image and clip illustrate the result, but do not replace running
 the interaction for implementation assessment.
@@ -107,14 +107,19 @@ track if it was playing before. Live S/J notes and D/K accompaniment follow the
 same harmonic palette. Each instrument has independent polyphony so melodic
 notes cannot cut off the drum or bass channels.
 
-DEMO, imported tracks and LOCAL now use **continuous morphogenesis**. A shared
-indexed set of ribs bends from a long arc into nested spirals, opens into hinged
-sectors, separates layers in depth and fans the fins. Eight smoothed construction
-parameters are driven by the spectrum and a coupled continuous system that
-retains musical history. They are not a timed sequence of the ten preset shapes.
-Changing curvature also changes internal distances and relative arrangement along the
-shared ordered paths; this is more than rotating the object or scaling it to the
-beat. Layer density and overall reach grow with the musical energy.
+DEMO, imported tracks and LOCAL use **a hierarchy of articulated branches**.
+Six parent branches each contain three child fans, repeated through up to nine
+depth layers. Parents fold and stretch while their children wind, roll and open
+independently. Joint transforms fade at shared edges to keep the structure joined.
+The spine integrates a varying tangent field, so its bend also changes locally.
+
+Measured percussion injects forces into overlapping branch regions; the spectrum,
+note history and coupled continuous dynamics develop their angles. Damped joints
+smooth these forces. There is no timed list of silhouettes, and the construction
+does not simply return to a few saved poses. Faster transient recoil remains
+separate from the slower unfolding. Musical energy increases the visible layers
+and overall reach. Each instance's position and local frame are calculated once
+and shared by both rendering passes through a floating-point pose texture.
 
 The ten shapes remain manual starting points. Y / 演化 toggles automatic
 development; shape keys take over while a smaller live articulation retains the
@@ -161,7 +166,8 @@ The external-camera path has **not yet been tested with the user's hardware**.
 - `recur/audio.py`: six original NumPy-generated stereo patches and a bass drop.
 - `recur/composition.py`: pitched live notes, four harmonies and a 32-bar score.
 - `recur/motion.py`: transient envelopes and continuous musical articulation.
-- `recur/morphology.py`: musical structural history, continuous construction and its CPU/shader counterparts.
+- `recur/morphology.py`: musical structural history and the renderer's pose lookup.
+- `recur/organism.py`: parent/child joint dynamics, connected spine and instance poses.
 - `recur/analysis.py`: measured attacks and tempo/beat estimation; no preset routes.
 - `recur/camera.py`: optional local motion input on a background thread.
 - `recur/ui.py`: interface rendered by Pygame and composited over the 3D scene.
@@ -215,11 +221,11 @@ the current track available and displays feedback. Empty or corrupt session data
 is rejected without replacing the current loop. Camera and audio-device failures
 also leave visual controls available.
 
-Automated development checks: 43 Python unit tests, ten-form OpenGL smoke test,
+Automated development checks: 46 Python unit tests, ten-form OpenGL smoke test,
 keyboard/loop/save/restore interaction check, and separate demo/import rhythm
 checks. These checks do not establish musical preference or replace the human
-trial described in PROCESS.md. On the development computer, both music playback
-checks ran around 59 FPS; other hardware may differ.
+trial described in PROCESS.md. Playback performance depends on hardware, window
+size and how much layered geometry is visible.
 
 ## Assignment submission
 

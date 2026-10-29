@@ -1,9 +1,8 @@
-import math
 import unittest
 import numpy as np
 from recur.model import Instrument
 from recur.motion import MusicalMotion
-from recur.morphology import Morphogenesis,position
+from recur.morphology import Morphogenesis
 
 
 class MorphogenesisTests(unittest.TestCase):
@@ -15,8 +14,8 @@ class MorphogenesisTests(unittest.TestCase):
             model.advance(1/hz);motion.update(model,1/hz)
             state.update(model,motion,1/hz,selected=True)
             if frame%hz==0:
-                snapshots.append(np.array([position(theta,band,state.shape,state.detail,state.phases)
-                                           for band in (0,1,3,5) for theta in np.linspace(0,math.tau,24,endpoint=False)]))
+                state.organism.build(state,motion,.4)
+                snapshots.append(state.organism.centers[[0,1,3,5],::9].reshape(-1,3).copy())
         return model,motion,state,snapshots
 
     def test_one_construction_develops_without_any_preset_selection(self):
@@ -31,13 +30,16 @@ class MorphogenesisTests(unittest.TestCase):
         self.assertGreater(float(np.mean(abs(distances_a-distances_b))),.18)
         self.assertGreater(float(np.mean(np.linalg.norm(a-b,axis=1))),.5)
         self.assertTrue(np.isfinite(frames).all())
-        self.assertLess(float(np.abs(frames).max()),6.)
+        self.assertLess(float(np.abs(frames).max()),9.)
 
     def test_pause_freezes_and_manual_control_smoothly_returns_originals(self):
         model,motion,state,_=self.simulate(3)
         before=(state.shape.copy(),state.detail.copy(),state.phases.copy(),state.strength)
+        roots=state.organism.roots.copy();children=state.organism.children.copy()
         model.paused=True;state.update(model,motion,.1,selected=True)
         self.assertEqual(before,(state.shape,state.detail,state.phases,state.strength))
+        np.testing.assert_array_equal(state.organism.roots,roots)
+        np.testing.assert_array_equal(state.organism.children,children)
         model.paused=False
         for _ in range(180):state.update(model,motion,1/60,selected=False)
         self.assertLess(state.strength,.00001)
@@ -47,15 +49,55 @@ class MorphogenesisTests(unittest.TestCase):
         for _ in range(600):state.update(model,motion,1/60,selected=True)
         self.assertEqual(state.phases,[0.,0.])
 
-    def test_open_arc_closes_into_a_spiral_with_large_internal_change(self):
-        params=[.2,.6,.8,.6];details=[.5,.4,.5,.8]
-        def points(curvature):
-            params[0]=curvature
-            return np.array([position(t,1,params,details,[2.,1.]) for t in np.linspace(0,math.tau,72,endpoint=False)])
-        arc,spiral=points(.2),points(1.25)
-        self.assertGreater(float(np.mean(np.linalg.norm(arc-spiral,axis=1))),1.)
-        self.assertGreater(float(np.ptp(arc[:,0])),3.)
-        self.assertGreater(float(np.ptp(spiral[:,1])),1.5)
+    def test_child_hinge_changes_its_fan_without_rigidly_moving_other_fans(self):
+        state=Morphogenesis();motion=MusicalMotion();network=state.organism
+        network.build(state,motion,0.);before=network.centers.copy()
+        network.children[7]=(.8,.9,-.6,.8)
+        network.build(state,motion,0.);after=network.centers
+        delta=np.linalg.norm(after-before,axis=-1)
+        self.assertGreater(float(delta[:,84:96].max()),.08)
+        np.testing.assert_array_equal(delta[:,:84],0.)
+        np.testing.assert_array_equal(delta[:,96:],0.)
+
+    def test_real_render_pose_contains_valid_local_frames_and_varied_joints(self):
+        _,motion,state,_=self.simulate(15)
+        pose=state.organism.build(state,motion,.6)
+        self.assertEqual(pose.shape,(36,216,4))
+        self.assertEqual(pose.dtype,np.dtype('f4'))
+        self.assertTrue(pose.flags.c_contiguous)
+        self.assertTrue(np.isfinite(pose).all())
+        frames=state.organism.frames
+        unit=frames/np.linalg.norm(frames,axis=-2,keepdims=True)
+        product=np.einsum('...ji,...jk->...ik',unit,unit)
+        np.testing.assert_allclose(product,np.broadcast_to(np.eye(3),product.shape),atol=1e-5)
+        self.assertGreater(float(np.ptp(state.organism.roots[:,1])),.5)
+        self.assertGreater(float(np.ptp(state.organism.children[:,2])),.5)
+
+    def test_voice_history_changes_branches_at_matching_current_loudness(self):
+        roots=[]
+        for voice in (0,3):
+            state=Morphogenesis();model=Instrument();motion=MusicalMotion()
+            motion.values=(.3,.5,.4,.7);motion.levels=[.6,.5,.4]
+            for frame in range(360):
+                if frame%30==0:motion.voice_totals[voice]+=.8
+                state.update(model,motion,1/60,selected=True)
+            roots.append(state.organism.roots.copy())
+        self.assertGreater(float(np.max(abs(roots[0]-roots[1]))),.015)
+
+    def test_drum_attack_changes_internal_geometry_immediately(self):
+        state=Morphogenesis();motion=MusicalMotion();network=state.organism
+        network.build(state,motion,0.);before=network.centers[0,::6].copy()
+        normals=network.frames[...,0].copy()
+        motion.values=(.9,0.,0.,.9)
+        network.build(state,motion,0.);after=network.centers[0,::6]
+        def distances(points):
+            matrix=np.linalg.norm(points[:,None]-points[None,:],axis=-1)
+            return matrix/matrix.mean()
+        # Normalized distances exclude a simple global scale/rotation response.
+        self.assertGreater(float(np.abs(distances(after)-distances(before)).mean()),.01)
+        current=network.frames[...,0]
+        dots=np.sum(normals*current,axis=-1)/(np.linalg.norm(normals,axis=-1)*np.linalg.norm(current,axis=-1))
+        self.assertGreater(float(np.arccos(np.clip(dots,-1.,1.)).mean()),.25)
 
     def test_fx_pad_steers_construction_instead_of_only_rotating_the_view(self):
         states=[]

@@ -33,7 +33,7 @@ def run(save,restore):
         pygame.display.set_mode(size,flags,vsync=1);renderer=SculptureRenderer(size)
     except Exception as exc:
         pygame.quit();print('OpenGL 3.3 could not start: '+str(exc));return 1
-    pygame.display.set_caption('RECUR / 环生 — continuous instrument')
+    pygame.display.set_caption('RECUR / 环生 — articulated instrument')
     model=Instrument();synth=Synth();ui=Interface();camera=MotionCamera()
     synth.muted=args.mute or args.smoke_test or args.interaction_test or args.music_test or args.rhythm_test
     music=MusicTrack();music.muted=synth.muted;renderer.music=music
@@ -42,7 +42,7 @@ def run(save,restore):
     demo=False;backup=None;backup_music=False;backup_forms=None;toast='';toast_until=0.
     camera_gate=[False]*4;camera_last=[-10.]*4
     smoke_stage=-1;smoke_time=0.;proof=set();frames=0
-    sync_errors=[];rhythm_forms=set();rhythm_controls=[];kick_frames=0;rhythm_started=None
+    sync_errors=[];rhythm_forms=set();rhythm_controls=[];rhythm_joints=[];kick_frames=0;rhythm_started=None
     if not synth.enabled:toast='Audio unavailable. Visual controls still work.';toast_until=time.monotonic()+7
 
     def notify(text):
@@ -69,7 +69,8 @@ def run(save,restore):
             data=ui.render(size,model,synth,renderer,camera,clock.get_fps(),toast,demo)
             renderer.draw(model,data);pygame.display.flip();pygame.event.pump()
             if demo:action('score')
-            music.load(path);renderer.evolution.reset();synth.silence();model.playing=False;model.recording=False
+            music.load(path);renderer.motion.reset();renderer.evolution.reset()
+            synth.silence();model.playing=False;model.recording=False
             model.paused=False
             notify('自动跟随音乐 / V 暂停 / Y 切换自动与手动')
             return True
@@ -359,10 +360,13 @@ def run(save,restore):
             if args.rhythm_test:
                 rhythm_forms.add(model.target)
                 rhythm_controls.append(renderer.evolution.shape[0])
+                rhythm_joints.append(renderer.evolution.organism.children[:,1].copy())
                 if time.monotonic()-rhythm_started>=12.:
                     assert len(sync_errors)>15 and kick_frames>5,'Drum motion missing'
                     assert len(rhythm_forms)==1,'Automatic playback cycled manual presets'
                     assert max(rhythm_controls)-min(rhythm_controls)>.35,'Continuous curvature did not develop'
+                    assert max(max(j[i] for j in rhythm_joints)-min(j[i] for j in rhythm_joints)
+                               for i in range(18))>.3,'Independent child hinges did not develop'
                     assert max(sync_errors)<.10,(f'Playback/visual delay max {max(sync_errors)*1000:.1f} ms; '
                                                  f'mean {sum(sync_errors)/len(sync_errors)*1000:.1f} ms; '
                                                  f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
@@ -382,7 +386,7 @@ def run(save,restore):
                 print(f'SMOKE INCOMPLETE: {len(proof)}/{FORM_COUNT} forms');return 1
             print(f'SMOKE OK: {frames} frames; {len(proof)} forms; {renderer.ctx.info["GL_RENDERER"]}')
         if args.interaction_test:print('INTERACTION OK: two decks, loop, edit, restore, demo, reverse, FX, brake, help, resize')
-        if args.music_test:print('MUSIC OK: import, measured envelopes, automatic forms, manual takeover, pause, resume, UI')
+        if args.music_test:print('MUSIC OK: import, measured envelopes, continuous branches, manual takeover, pause, resume, UI')
         if args.rhythm_test:
             print(f'RHYTHM OK: {music.path.name}; {len(sync_errors)} attacks; {kick_frames} kick attacks; '
                   f'{len(rhythm_forms)} fixed base; curvature span {max(rhythm_controls)-min(rhythm_controls):.2f}; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
