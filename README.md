@@ -1,5 +1,7 @@
 # RECUR / 环生
 
+**Public source repository:** https://github.com/CHEN526-f/recur
+
 A Python audiovisual instrument by **CHEN Hongfan**, developed with AI assistance.
 Metallic, repeated ribs form a sculpture that can close, unfold, curl, grow and
 disassemble in real time. The same action plays an original synthesized sound

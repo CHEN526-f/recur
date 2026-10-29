@@ -3,6 +3,23 @@
 本项目按**公开 GitHub 源码仓库 + 本地 Python 交互作品**提交，不部署网页。
 正式要求：https://github.com/sd5913/teaching/blob/main/syllabus/03-interactive-experience.md
 
+**仓库已创建并上传：https://github.com/CHEN526-f/recur**
+
+下面第 2、3 节的首次创建和推送已经完成，不要重复创建 `origin`。
+现在请完成本机最终运行检查、核对 PROCESS 的实际试用记录，并按第 4 节向 Canvas
+提交上面的仓库链接。浏览器版保留在源代码中，但没有部署网页。
+
+后续修改文件后，在本项目终端使用：
+
+```powershell
+git status
+git add .
+git commit -m "Describe the actual change"
+git push
+```
+
+`commit` 是保存本地快照，`push` 才会把新快照上传；只在 GitHub 网页刷新不会上传本机改动。
+
 ## 仓库应包含的内容
 
 | 要求 | 本项目对应内容 |
@@ -78,7 +95,6 @@ git commit -m "Prepare RECUR interactive artwork submission"
 
 `https://github.com/CHEN526-f/recur`
 
-这是预定地址，不表示仓库现在已经创建或上传成功。不要提交 `localhost` 地址、
-本机路径、zip 下载链接或 GitHub 首页。
+该地址现已创建并上传。不要提交 `localhost` 地址、本机路径、zip 下载链接或 GitHub 首页。
 
 截止时间：**2026 年 11 月 1 日 23:59，香港时间**。在线网页链接不是强制项。

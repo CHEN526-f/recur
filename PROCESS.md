@@ -58,7 +58,7 @@ The assignment source was checked again. It permits Python as well as browser
 projects and requires a public source repository; a live website is optional.
 The browser port therefore improves access, rather than correcting a mandatory
 format violation. Pages publication configuration is included, but publication
-is not claimed while GitHub is unauthenticated. A Sites registration was attempted
+was not available at that stage while GitHub CLI was unauthenticated. A Sites registration was attempted
 but the service connection failed; its state could not be confirmed, and no
 second registration was attempted. No Sites deployment is claimed.
 
@@ -119,3 +119,10 @@ during submission preparation, followed by the documentation/trial checkpoint.
 These commits were created now; no historical dates or earlier incremental
 commits were fabricated. Preserve any later fixes and trial updates as further
 actual commits.
+
+Following the author's GitHub CLI browser authorization, the source and real
+commit history were pushed to **https://github.com/CHEN526-f/recur** on the main
+branch. The repository is public. Website deployment was not performed; its
+workflow remains manual-only. A final documentation commit records the actual
+repository address and submission steps. Canvas submission remains the author's
+separate final action.

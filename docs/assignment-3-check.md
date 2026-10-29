@@ -21,7 +21,7 @@ account**, through Canvas. Due: **2026-11-01 23:59 Hong Kong time**.
 | At least one real user trial and improvement/decision | Author has confirmed another person tried keys and sliders; their observations and the corresponding changes are recorded in PROCESS. Retest not confirmed |
 | Source credits | Browser credits page and CC0 recording attribution included |
 | Visible development history | Real local source and submission-document checkpoints are being recorded now. They are consolidated snapshots, not reconstructed earlier history; preserve subsequent changes |
-| Public GitHub repository under own account | **PENDING — GitHub CLI is not authenticated; no remote configured** |
+| Public GitHub repository under own account | Uploaded to https://github.com/CHEN526-f/recur, public, default branch main |
 | Online experience | Optional and not required; author selected source-repository submission, without website deployment |
 
 Automated browser and sound checks do not satisfy the human-trial requirement.
