@@ -1,0 +1,23 @@
+RECUR / music direction
+
+Status: a Suno track has NOT been generated or downloaded in this project.
+The Edge automation session stopped because it could not verify the current URL.
+The following is a prepared prompt, not a claim of a generated result.
+
+Instrumental only. 108 BPM, D minor. Elegant cinematic electronic music for a
+kinetic sculpture of polished gold, silver and a few glass ribs. Warm deep round
+bass, soft restrained kick, delicate glass plucks, velvet minor-ninth pads, fine
+organic percussion. Clear four-bar phrases and an evolving eight-bar arc.
+Sparse opening with space between gestures; interlocking arpeggios slowly bloom
+into a rich, symmetrical, hypnotic peak, then gracefully contract. Sophisticated
+ambient techno and modern chamber-electronic sound design, spacious stereo,
+smooth transients, controlled high frequencies, dynamic contrast, coherent
+harmony. No vocals, no spoken word, no shrill FM bells, no brass-like synth,
+no harsh distortion, no abrupt key changes, no aggressive EDM drop. Approximately
+one to two minutes, clean intro and tail suitable for an interactive installation.
+
+Use a downloaded WAV or MP3 with:
+  uv run python app.py --music "C:/path/to/your/track.mp3"
+or drop the file onto the running sculpture window. V pauses/resumes the music.
+The program analyses the actual local recording to drive low/mid/high movement;
+it does not call Suno or extract anything from the supplied reference clip.
