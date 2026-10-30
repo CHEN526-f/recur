@@ -49,7 +49,7 @@ def main():
             measured=music.analysis.sample(time);renderer.motion.external=measured
             renderer.climax.music_level=sum(a*b for a,b in zip(measured,(.2,.35,.45)))
             for event in music.take_attacks():
-                renderer.motion.note(event.voice,(.45+.55*event.strength)*np.exp(-(time-event.time)*9.));attacks+=1
+                renderer.motion.note(event.voice,(.45+.55*event.strength)*np.exp(-(time-event.time)*9.),source='TRACK');attacks+=1
             for i in range(3):model.band_targets[i]=max(model.band_targets[i],measured[i])
             model.energy_target=max(model.energy_target,sum(measured)/3)
             model.advance(1/fps);renderer.draw(model,overlay);forms.add(model.target)
@@ -60,7 +60,7 @@ def main():
             if proof<len(checkpoints) and time>=checkpoints[proof]:
                 im=Image.fromarray(pixels);im.save(output.with_name(f'{output.stem}-{proof+1}.png'))
                 im.thumbnail((356,212));x=(proof%4)*360;y=(proof//4)*240
-                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s / {renderer.evolution.vj.label}',fill='#e5d9ad')
+                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s / {len(renderer.stage.notes)} visual notes',fill='#e5d9ad')
                 proof+=1
             pygame.display.flip()
         for packet in video.encode():container.mux(packet)

@@ -20,6 +20,7 @@ def run(save,restore):
     parser.add_argument('--interaction-test',action='store_true')
     parser.add_argument('--music-test',action='store_true')
     parser.add_argument('--rhythm-test',action='store_true',help='Run 12 seconds of real playback and verify audio/motion timing.')
+    parser.add_argument('--polyphony-test',action='store_true',help='Verify simultaneous keys and multi-finger event routing.')
     parser.add_argument('--mute',action='store_true')
     parser.add_argument('--music',help='Play and analyse a local WAV, MP3, OGG or FLAC track.')
     args=parser.parse_args()
@@ -28,12 +29,13 @@ def run(save,restore):
     pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION,3)
     pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK,pygame.GL_CONTEXT_PROFILE_CORE)
     flags=pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE;size=(1280,820)
-    if args.smoke_test or args.interaction_test or args.music_test or args.rhythm_test:flags|=pygame.HIDDEN
+    if args.smoke_test or args.interaction_test or args.music_test or args.rhythm_test or args.polyphony_test:flags|=pygame.HIDDEN
     try:
         pygame.display.set_mode(size,flags,vsync=1);renderer=SculptureRenderer(size)
     except Exception as exc:
         pygame.quit();print('OpenGL 3.3 could not start: '+str(exc));return 1
-    pygame.display.set_caption('RECUR / 环生 — stage VJ')
+    pygame.display.set_caption('RECUR / 环生 — polyphonic instrument')
+    if args.smoke_test:renderer.play_mode=False
     model=Instrument();synth=Synth();ui=Interface();camera=MotionCamera()
     synth.muted=args.mute or args.smoke_test or args.interaction_test or args.music_test or args.rhythm_test
     music=MusicTrack();music.muted=synth.muted;renderer.music=music
@@ -47,33 +49,35 @@ def run(save,restore):
 
     def notify(text):
         nonlocal toast,toast_until
+        if any('\u4e00'<=c<='\u9fff' for c in text):text='Unable to complete this action. Check the file or device.'
         toast=text;toast_until=time.monotonic()+3
 
     def hit(index,source='LIVE',deck=None,event=None):
         if model.paused:return
-        if source=='LIVE':music.set_auto(False)
-        if source=='LIVE' and demo:performance.set_auto(False)
+        if source=='LIVE' and not renderer.play_mode:music.set_auto(False)
+        if source=='LIVE' and demo and not renderer.play_mode:performance.set_auto(False)
         deck=model.selected_deck if deck is None else deck
         event=event or performance.live(index,performance.position/4 if demo else model.clock*model.bpm/60.)
-        model.trigger(index,source,deck)
+        model.trigger(index,'PAD' if renderer.play_mode and source in ('LIVE','TOUCH') else source,deck)
         synth.play(index,deck,model.deck_speeds[deck],note=event.note,velocity=event.velocity,chord=event.chord,variant=event.variant)
         gain=math.cos(model.crossfade*math.pi/2) if deck==0 else math.sin(model.crossfade*math.pi/2)
         renderer.climax.note(index,gain*event.velocity)
-        renderer.motion.note(index,event.velocity,gain)
+        return renderer.motion.note(index,event.velocity,gain,source)
 
     def load_track(path):
         nonlocal demo
         if not synth.enabled:notify('Audio device unavailable');return False
         try:
-            notify('正在分析音乐…')
+            notify('Analyzing music...')
             data=ui.render(size,model,synth,renderer,camera,clock.get_fps(),toast,demo)
             renderer.draw(model,data);pygame.display.flip();pygame.event.pump()
             if demo:action('score')
             music.load(path);renderer.motion.reset();renderer.evolution.reset()
+            renderer.stage.reset()
             renderer.evolution.strength=1.
             synth.silence();model.playing=False;model.recording=False
             model.paused=False
-            notify('自动跟随音乐 / V 暂停 / Y 切换自动与手动')
+            notify('Music follows / V: pause / Y: music visuals on or off')
             return True
         except (OSError,ValueError,pygame.error) as exc:notify(str(exc));return False
 
@@ -89,6 +93,7 @@ def run(save,restore):
 
     def select_extra(index):
         if model.paused:return
+        renderer.play_mode=False
         if music.path:music.set_auto(False)
         if demo:performance.set_auto(False)
         model.select_shape(index)
@@ -96,7 +101,12 @@ def run(save,restore):
 
     def action(name):
         nonlocal demo,backup,backup_music,backup_forms
-        if name in ('help','close_help'):
+        if name=='visual_mode':
+            renderer.play_mode=not renderer.play_mode
+            renderer.stage.contacts.clear()
+            if not renderer.play_mode:
+                music.set_auto(False);performance.set_auto(False);renderer.evolution.strength=0.
+        elif name in ('help','close_help'):
             ui.show_help=not ui.show_help;model.holding=False;model.jog[:]=[None,None]
         elif name=='camera':ui.show_camera=not ui.show_camera
         elif name=='grid':ui.show_grid=not ui.show_grid
@@ -119,7 +129,7 @@ def run(save,restore):
             model.playing=desired
             if desired and music.auto:renderer.evolution.strength=1.
             if model.playing and not any(any(row) for row in model.loop+model.loop_b):
-                ui.show_grid=True;notify('循环是空的：点亮格子即可试听并开始循环')
+                ui.show_grid=True;notify('Empty loop: click a cell to audition and start playback')
         elif name in ('deck_a','deck_b'):model.selected_deck=0 if name=='deck_a' else 1
         elif name=='record':
             if demo:notify('Stop LOCAL before recording');return
@@ -132,7 +142,7 @@ def run(save,restore):
             else:notify('Clear this deck? Click again.')
         elif name=='demo':
             if music.path==DEMO_PATH and music.running and not demo:music.toggle()
-            elif load_track(DEMO_PATH):notify('DEMO / Technological Messup / CC0 / 自动卡点')
+            elif load_track(DEMO_PATH):notify('DEMO / Technological Messup / CC0 / Measured onset following')
         elif name=='score':
             if not demo:
                 backup_music=music.playing;music.pause(True)
@@ -140,6 +150,7 @@ def run(save,restore):
                 backup_forms=(model.target,model.target_b)
                 model.playing=False;model.recording=False;model.crossfade_target=.45
                 renderer.motion.reset();renderer.climax.reset();renderer.evolution.reset()
+                renderer.stage.reset()
                 renderer.evolution.strength=1.
                 synth.silence();synth.prepare(performance.score);performance.start()
             elif backup:
@@ -200,6 +211,7 @@ def run(save,restore):
                     pygame.display.set_mode(size,flags);renderer.resize(size)
                 elif event.type==pygame.WINDOWFOCUSLOST:
                     model.release();model.jog[:]=[None,None];drag=None;synth.silence()
+                    renderer.stage.contacts.clear()
                 elif event.type==pygame.KEYDOWN:
                     k=event.key
                     if k==pygame.K_ESCAPE:
@@ -209,7 +221,9 @@ def run(save,restore):
                     elif ui.show_help:
                         if k==pygame.K_RETURN:ui.show_help=False
                     elif k in (pygame.K_a,pygame.K_s,pygame.K_d,pygame.K_j,pygame.K_k,pygame.K_l):
-                        hit((pygame.K_a,pygame.K_s,pygame.K_d,pygame.K_j,pygame.K_k,pygame.K_l).index(k))
+                        voice=(pygame.K_a,pygame.K_s,pygame.K_d,pygame.K_j,pygame.K_k,pygame.K_l).index(k)
+                        renderer.stage.contacts.down(('key',k),voice,hit)
+                    elif k==pygame.K_F2:action('visual_mode')
                     elif k==pygame.K_TAB:model.selected_deck=1-model.selected_deck
                     elif k==pygame.K_SPACE and not model.paused:model.holding=True
                     elif k==pygame.K_i:action('grid')
@@ -233,7 +247,7 @@ def run(save,restore):
                     elif k==pygame.K_p:
                         model.paused=not model.paused;model.release();model.jog[:]=[None,None];synth.silence()
                         music.pause(model.paused)
-                    elif k==pygame.K_BACKSPACE:model.reset();renderer.climax.reset();renderer.motion.reset();renderer.evolution.reset()
+                    elif k==pygame.K_BACKSPACE:model.reset();renderer.climax.reset();renderer.motion.reset();renderer.evolution.reset();renderer.stage.reset()
                     elif k in (pygame.K_1,pygame.K_2,pygame.K_3):renderer.palette=k-pygame.K_1
                     elif k==pygame.K_b:renderer.light_background=not renderer.light_background
                     elif k in (pygame.K_MINUS,pygame.K_EQUALS):synth.volume=max(0.,min(.8,synth.volume+(.05 if k==pygame.K_EQUALS else -.05)))
@@ -243,9 +257,24 @@ def run(save,restore):
                 elif event.type==pygame.KEYUP and event.key==pygame.K_SPACE:
                     if model.holding and not model.paused:
                         amount=model.release();synth.drop(amount);renderer.climax.drop(amount,model.weights)
+                elif event.type==pygame.KEYUP:
+                    renderer.stage.contacts.up(('key',event.key))
+                elif event.type==pygame.FINGERDOWN and not ui.show_help:
+                    if renderer.play_mode:
+                        pos=(event.x*size[0],event.y*size[1])
+                        control=any(r.collidepoint(pos) for r in ui.buttons.values()) or any(r.collidepoint(pos) for r,_,_ in ui.cells)
+                        if control:
+                            pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=pos,touch=False))
+                            continue
+                        voice=next((i for i,r in enumerate(ui.pad_rects) if r.collidepoint(pos)),None)
+                        if voice is None:voice=renderer.stage.contacts.zone(event.x,event.y)
+                        renderer.stage.contacts.down(('finger',event.finger_id),voice,lambda v:hit(v,'TOUCH'))
+                elif event.type==pygame.FINGERUP:
+                    renderer.stage.contacts.up(('finger',event.finger_id))
                 elif event.type==pygame.MOUSEWHEEL and not ui.show_help:
                     renderer.zoom_target=max(4.8,min(10.,renderer.zoom_target-event.y*.25))
                 elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
+                    if getattr(event,'touch',False):continue
                     pos=event.pos;used=False
                     for name,r in ui.buttons.items():
                         if r.collidepoint(pos):action(name);used=True;break
@@ -264,8 +293,8 @@ def run(save,restore):
                                     model.playing=True
                                     if music.auto:renderer.evolution.strength=1.
                                     hit(row,'GRID')
-                                    notify('已加入并试听 / 循环播放中' if not synth.muted else '已加入 / 当前静音，按 M 开声音')
-                                else:notify('已移除此音符')
+                                    notify('Note added / Loop playing' if not synth.muted else 'Note added / Muted: press M for sound')
+                                else:notify('Note removed')
                                 used=True;break
                         if not used and ui.fader and ui.fader.inflate(8,14).collidepoint(pos):
                             drag='fader';move_control(pos);used=True
@@ -277,7 +306,11 @@ def run(save,restore):
                                     model.selected_deck=deck;model.jog[deck]=0.;drag=deck
                                     jog_angle=math.atan2(pos[1]-center[1],pos[0]-center[0]);jog_last=time.monotonic()
                                     used=True;break
-                        if not used:drag='orbit'
+                        if not used:
+                            if renderer.play_mode:
+                                voice=renderer.stage.contacts.zone(pos[0]/size[0],pos[1]/size[1])
+                                hit(voice,'TOUCH')
+                            else:drag='orbit'
                 elif event.type==pygame.MOUSEBUTTONUP:drag=None;model.jog[:]=[None,None]
                 elif event.type==pygame.MOUSEMOTION and drag is not None:
                     if drag=='orbit':
@@ -300,7 +333,7 @@ def run(save,restore):
                             sync_errors.append(age)
                             if attack.voice==0:kick_frames+=1
                         strength=(.45+.55*attack.strength)*math.exp(-age*9.)
-                        renderer.motion.note(attack.voice,strength)
+                        renderer.motion.note(attack.voice,strength,source='TRACK')
                     for band in range(3):model.band_targets[band]=max(model.band_targets[band],measured[band])
                     model.energy_target=max(model.energy_target,sum(measured)/3)
                 synth.duck=.28 if music.playing else 1.
@@ -365,7 +398,9 @@ def run(save,restore):
                     assert music.playing,'Cancelling import interrupted playback'
                     with patch('recur.player.pick_audio_file',return_value=str(music.path)):action('import_music')
                     assert music.playing and music.auto,'Import button path failed'
-                if frames==4:hit(0);assert not music.auto,'Manual takeover failed'
+                if frames==4:
+                    hit(0);assert music.auto and renderer.stage.counts[0]>0,'Live overlay interrupted the track'
+                    action('auto_music');assert not music.auto
                 if frames==6:action('auto_music');assert music.auto,'Automatic follow failed'
                 if frames==8:action('music');assert music.paused,'Music pause failed'
                 if frames==10:action('music');assert music.playing,'Music resume failed'
@@ -389,17 +424,44 @@ def run(save,restore):
                     running=False
             if args.rhythm_test:
                 rhythm_forms.add(model.target)
-                rhythm_controls.append(renderer.evolution.vj.time)
-                rhythm_joints.append(renderer.evolution.vj.edits)
+                rhythm_controls.append(renderer.stage.time)
+                rhythm_joints.append(sum(renderer.stage.counts))
                 if time.monotonic()-rhythm_started>=12.:
                     assert len(sync_errors)>15 and kick_frames>5,'Drum motion missing'
                     assert len(rhythm_forms)==1,'Automatic playback cycled manual presets'
-                    assert max(rhythm_controls)-min(rhythm_controls)>3.,'VJ spatial motion did not advance'
-                    assert max(rhythm_joints)>=1,'No music-led compositional edit occurred'
+                    assert max(rhythm_controls)-min(rhythm_controls)>3.,'Visual time did not advance'
+                    assert max(rhythm_joints)>=15,'Measured attacks did not trigger independent voices'
+                    assert sum(n>0 for n in renderer.stage.counts)>=3,'Visual orchestration stayed in one voice'
                     assert max(sync_errors)<.10,(f'Playback/visual delay max {max(sync_errors)*1000:.1f} ms; '
                                                  f'mean {sum(sync_errors)/len(sync_errors)*1000:.1f} ms; '
                                                  f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
                     assert renderer.motion.activity>.05,'Geometry motion stayed inactive'
+                    running=False
+            if args.polyphony_test:
+                if frames==2:
+                    for key in (pygame.K_a,pygame.K_s,pygame.K_d):pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=key))
+                if frames==4:
+                    assert renderer.stage.counts[:3]==[1,1,1]
+                    pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_a,repeat=True))
+                if frames==6:
+                    assert renderer.stage.counts[0]==1,'Held key retriggered'
+                    for finger,x in ((101,.18),(102,.50),(103,.82)):
+                        pygame.event.post(pygame.event.Event(pygame.FINGERDOWN,finger_id=finger,x=x,y=.55))
+                if frames==8:
+                    assert renderer.stage.counts==[1]*6,'Simultaneous fingers did not produce distinct voices'
+                    assert len(renderer.stage.contacts.held)==6
+                    pygame.event.post(pygame.event.Event(pygame.FINGERUP,finger_id=102,x=.5,y=.55))
+                if frames==10:
+                    assert len(renderer.stage.contacts.held)==5
+                    assert len(renderer.stage.notes)==6,'A finger release cut an animation tail'
+                    pygame.event.post(pygame.event.Event(pygame.KEYUP,key=pygame.K_a))
+                if frames==12:assert len(renderer.stage.contacts.held)==4
+                if frames==45:
+                    Path('captures/qa').mkdir(parents=True,exist_ok=True)
+                    pygame.image.save(renderer.capture(),'captures/qa/polyphonic-interface.png')
+                if frames==210:
+                    assert not renderer.stage.notes,'Completed notes did not expire'
+                    assert model.target==0,'Keyboard voices retargeted the global sculpture'
                     running=False
             renderer.instrument_visible=not ui.hide
             data=ui.render(size,model,synth,renderer,camera,clock.get_fps(),toast if time.monotonic()<toast_until else '',demo)
@@ -417,10 +479,11 @@ def run(save,restore):
                 print(f'SMOKE INCOMPLETE: {len(proof)}/{FORM_COUNT} forms');return 1
             print(f'SMOKE OK: {frames} frames; {len(proof)} forms; {renderer.ctx.info["GL_RENDERER"]}')
         if args.interaction_test:print('INTERACTION OK: two decks, loop, edit, restore, demo, reverse, FX, brake, help, resize')
-        if args.music_test:print('MUSIC OK: import, VJ/manual takeover, loop auto-start, silent-deck recovery, pause/resume, UI')
+        if args.music_test:print('MUSIC OK: import, live overlay, music-follow toggle, loop auto-start, silent-deck recovery, pause/resume, UI')
+        if args.polyphony_test:print('POLYPHONY OK: 3 simultaneous keys + 3 synthetic fingers; independent release, held-key suppression, natural expiry')
         if args.rhythm_test:
             print(f'RHYTHM OK: {music.path.name}; {len(sync_errors)} attacks; {kick_frames} kick attacks; '
-                  f'{len(rhythm_forms)} fixed manual base; {max(rhythm_joints)} VJ edits; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
+                  f'{len(rhythm_forms)} unchanged base; {max(rhythm_joints)} independent visual notes; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
                   f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
     finally:
         camera.stop();music.close();synth.silence();pygame.quit()

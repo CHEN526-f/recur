@@ -1,6 +1,22 @@
 # Visual refinement — iteration log
 
-## Current: stage VJ and spatial reassembly — 30 October 2026
+## Current: polyphonic performance — 31 October 2026
+
+The author rejected continuing whole-object twitching and requested distinct key
+voices, smooth overlap and simultaneous touch, while retaining black/gold metal
+and sparse glass. The default renderer now appends independently timed visual
+notes. A new note cannot retarget an older note. The spectrum only schedules new
+notes; it does not continually distort live geometry or resize the viewport.
+
+Six voice generators use polished rounded-section shading, translucent facets
+and a small resolved-image glass pass. This is a 2.5D treatment, with the old 3D
+sculpture studies retained on F2. New source and interface text are English except
+for the project title. The current previews are real renderer output. Automated
+touch checks use synthetic SDL events, not a verified physical touch device.
+
+The following sections record superseded visual approaches and their feedback.
+
+## Earlier: stage VJ and spatial reassembly — 30 October 2026
 
 The author rejected the hierarchy below as still spring-like. The current
 runtime uses six spatial generators in `recur/vj.py`: moving polygon tunnels,

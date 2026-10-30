@@ -17,7 +17,7 @@ pygame.display.init();pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VE
 pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION,3)
 pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK,pygame.GL_CONTEXT_PROFILE_CORE)
 size=(1000,680);pygame.display.set_mode(size,pygame.OPENGL|pygame.DOUBLEBUF|pygame.HIDDEN)
-renderer=SculptureRenderer(size);renderer.instrument_visible=False
+renderer=SculptureRenderer(size);renderer.instrument_visible=False;renderer.play_mode=False
 renderer.evolution.strength=1.;renderer.climax.amount=.55
 renderer.motion.values=(.5,.7,.5,.8);renderer.motion.levels=[.7,.6,.6]
 model=Instrument();model.paused=True;model.energy=.6

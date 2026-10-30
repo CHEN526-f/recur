@@ -18,7 +18,7 @@ imports and the independently tested second track are not bundled.
 
 ## Reference works — influences, not included assets
 
-- 冷锋过境, *永生 / OUROBOROS* (2022):
+- Lengfeng Guojing, *Ouroboros* (2022):
   https://www.bilibili.com/video/BV1f3411g7wK/ — repeated metallic modules,
   segmented transformations, closure and unfolding informed structural study.
 - Jono Brandel and Lullatone, *Patatap*: https://patatap.com/ — direct
@@ -38,11 +38,15 @@ WebGL2, Web Audio and Workers without third-party runtime JavaScript packages.
 ## AI assistance
 
 The earlier articulated-branch study uses standard Lorenz-type differential
-equations and remains in the development source. The current automatic VJ mode
+equations and remains in the development source. The preserved VJ experiment
 uses project implementations of parametric tunnels, mirrored fans, folded grids,
 spheres/toruses, ribbons and prism surfaces. Its music-led director, folded
 reassembly and pose-texture integration are implemented here; no VJ footage or
-simulation implementation was copied. Reference imagery informed the desired
+simulation implementation was copied. The default stage now uses independent
+visual-note instances, original curve/polygon generators, 2.5D rounded-section
+metal shading and a small resolved-image glass pass. Patatap informed the
+independent-trigger/overlap principle; its implementation, animations and audio
+were not copied. Reference imagery informed the desired
 richness and material direction; its meshes and footage are not artwork assets.
 
 OpenAI Codex assisted with interpretation of the brief, code, geometry and

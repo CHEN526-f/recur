@@ -1,146 +1,61 @@
-# 先看这里：运行与提交
+# RECUR / 环生 — Start here
 
-本次按**公开 GitHub 源码仓库 + 本地 Python 作品**提交，不需要发布网页。
-在项目目录运行：
+The submitted artwork is the local Python application. The public repository is
+https://github.com/CHEN526-f/recur. A hosted website is not required for this submission.
+
+## Run
+
+Open the project folder in VS Code, open a new terminal, and run:
 
 ```powershell
 uv sync --frozen
 uv run python app.py
 ```
 
-打开作品窗口后，按 T 播放示范，U 导入自己的音乐，A/S/D/J/K/L 手动演奏，
-按住空格再释放感受结构展开。提交步骤、文件清单见 `SUBMISSION.md`。
-`web/` 保留为可选开发实验，GitHub Pages 不会随推送自动发布。
+Click the artwork window before playing. The first setup downloads dependencies;
+normal playback and analysis run locally without an API key.
 
-这是一个 **Python 原型**，叫 RECUR / 环生。参考的是你上传视频后半段的
-金属构件、分段环形、卷曲与绽放；不是把视频嵌入程序播放。
+## Play independent visual voices
 
-## 1. 在 VS Code 里打开
+| Key | Visual voice | Sound |
+|---|---|---|
+| A | Expanding pulses | Kick |
+| S | Sweeping arcs | Pitched glass melody |
+| D | Opening fan | Chord |
+| J | Gliding ribbon | Warm pluck |
+| K | Depth outlines | Bass |
+| L | Spark constellation | Percussion |
 
-打开文件夹：
+Combine keys. A new voice does not replace an existing animation. Every note has
+its own smooth attack and release. Holding a key does not generate repeated hits.
+Tap the canvas or pads to play; compatible touchscreens can send multiple finger
+contacts. Ordinary laptop trackpads may expose only one mouse cursor to SDL.
+Releasing one contact leaves the other contacts and animation tails intact.
 
-你从 GitHub 克隆或下载后解压的项目文件夹
+T plays the bundled CC0 recording. U imports WAV, MP3, OGG or FLAC (up to ten
+minutes). Measured attacks orchestrate the same visual voices. Y enables or
+disables imported-music visuals; live playing can continue over the recording.
+G starts/stops the original 32-bar synthesized score. No pitch or emotion
+recognition is claimed. Beat timing depends on the recording and output devices.
 
-VS Code 菜单 **Terminal → New Terminal**，输入：
+## Controls
 
-```powershell
-uv sync
-uv run python app.py
-```
+- H: artwork-only view. F: fullscreen. P: pause. M: mute.
+- I / LOOP: open the 16-step editor. Adding a cell auditions and starts the loop.
+- R: overdub live notes. The editor displays its playhead, state and deck gain.
+- Tab: choose deck A/B. The crossfader controls their sound gains.
+- Z/X: lower/raise the live melody octave. FX controls tone and echo.
+- E / SAVE: save an image and session in `captures/`. O / LOAD: restore it.
+- F2 / SCULPT: the preserved sculpture study, including the ten manual forms.
+- 4/5/6/7: enter sculpture mode and choose iris/corona/rosette/facet.
+- Backspace: reset controls while preserving your loop. Escape: exit.
 
-会打开独立的作品窗口，不是浏览器。鼠标先点一下作品窗口，再按键。
-第一次运行需要联网下载依赖；之后不需要 API、不需要付费模型。
+Application labels, guidance and notices are English. The project title retains
+its Chinese name. The native file chooser follows the operating system language.
 
-新版的高潮效果：在 A 盘连续弹 **S**，或交替弹 **S / D**，结构会逐渐展开到
-画面边缘；按住空格约两秒再松开，也会触发一次空间展开。停止密集演奏后会慢慢
-收回。**H** 隐藏操作面板，**F** 全屏，适合看完整画面。材质现在以金属为主，
-混入少量折射玻璃，辉光集中在亮边。重新运行程序后生效。
+## Submission
 
-按 **Tab** 选择 A/B 盘；下方推杆同时混合声音与形态。只推到 A 端时，B 盘的
-音符不会推动高潮。拖动圆盘可以搓盘，右侧 FX 区控制音色和空间。
-
-## 2. 第一轮先这样玩
-
-已按你的要求回退原来的六种造型：A 蛇形、S 开放长带、D 卷曲花瓣、J 矩形晶体、
-K 交错轨道、L 波浪曲面。新增造型另外放在 **4 / 5 / 6 / 7**：六重开合、
-四重层冠、八重花瓣和棱晶层；也可以点击原六键上方的小按钮。原有造型、双盘、
-节奏循环和音乐联动均保留，不再把所有造型统一成中心对称。
-手动演奏有独立的鼓、低音、和弦、玻璃旋律与温暖的回应旋律，是本地合成。
-
-**先按 T 或点下方 DEMO：播放网上找到的 CC0 电子乐《Technological Messup》。**
-作者是 Centurion_of_war，约 1 分 47 秒，鼓、低音与旋律直接使用完整录音，不叠加合成鼓。
-曲目随项目附带，可以离线播放；来源与授权见 `assets/music/CREDITS.md`。
-
-DEMO 和你导入的音乐使用同一套自动卡点：先分析实际音频的鼓点与瞬态，播放时按
-音频进度触发回弹、波动和鳍片翻转；构型重组响应实际瞬态与乐句变化，在估计节拍上落定。
-会自动估计节拍，无需手调 BPM。鼓点清晰的音乐定位最稳定；无鼓点、复杂变拍的音乐
-会依实际检测结果变化，不保证所有音乐都能推断出准确拍号。
-
-原来的本地编曲保留在 **G / LOCAL**。默认 108 BPM 下约 71 秒，共 32 小节，
-按“引子 → 主题 → 发展 → 高潮 → 留白 → 收尾”展开，不再是一小节重复。
-上方显示当前段落、和弦和小节数。和声在 Dm9、Bbmaj9、Fmaj9、Cadd9 之间转换。
-再按 G 停止，会恢复原来的循环、叠录状态和推杆；之前播放的导入音乐也会恢复。
-
-**自动播放现在采用舞台 VJ 模式。** 有纵深隧道、镜面分瓣、折叠曲面、
-晶体球／环面、流动带和棱镜空间等视觉结构；使用平面镜片、尖叶片和圆润晶体，
-不再全部依靠 C 形构件。每种结构内部继续随音乐变形，重组也经过有序的折叠布局。
-实际瞬态与乐句变化触发视觉编排，重组尽量在估计节拍上落定，不按固定顺序轮播。
-
-原来的十种手动造型保留。**A → S** 会先分瓣旋转、折叠，再形成长带，
-不再只是把环形的位置直接拉成直线。左右混音推杆也有整体重排过程。
-点击上方 **VJ／手动** 或按 **Y** 切换；按造型键接管为手动，音乐继续播放。
-停止 LOCAL 会恢复开始前的造型。
-
-自己演奏时，连续按 **S** 会弹出变化的玻璃旋律，**J** 是另一种温暖的旋律音色；
-**D** 弹当前和弦，**K** 在根音、五度、八度之间变化，**A / L** 提供底鼓和打击乐。
-**Z / X** 降低／升高 S、J 的演奏八度。各声部使用独立通道，可以叠在一起。
-
-**自动音乐模式：点击左上角“导入音乐”（或按 U），选择一首音乐，即会自动播放并驱动画面。**
-也可以把音乐文件直接拖进作品窗口。支持 MP3 / WAV / OGG / FLAC，单首最长十分钟。
-无需再手动弹键或先设置 BPM。
-
-导入后，低频瞬态推动回弹，中频与高频改变卷曲、折叠、层距及局部翻转。
-较慢的结构演化与快速的鼓点反馈分开处理，高潮增加层数与空间占比。
-左上角“VJ／手动”按钮或 **Y** 可以切换模式；直接按造型键也会接管为手动，
-音乐仍继续播放。点击“VJ”即可重新跟随音乐。原有十种形态均保留。
-
-也可以从终端指定音乐启动：
-
-```powershell
-uv run python app.py --music "C:\你的音乐目录\track.mp3"
-```
-
-按 **V** 暂停／继续音乐，**M** 静音，**H / F** 隐藏控制面板／全屏。
-所有音频分析都在本地完成，包括频段、瞬态和节拍估计，不识别歌曲情绪或音符。
-BPM 控制你自己录的节奏循环。Suno 的准备提示词在 `docs/suno-direction.txt`。
-
-1. 按 **A → S → D → J → K → L**，每次停两秒，确认六种原有轮廓；再按 4 / 5 / 6 / 7 体验新增造型。
-2. 按住 **空格两秒**，然后松开，触发蓄力和释放。
-3. 按 **T / DEMO**，播放／暂停新的 CC0 示范音乐；**G / LOCAL** 播放原来的本地编曲。
-4. 按 **R** 开始叠录，随意弹 A/S/D/J/K/L；再按 R 停止叠录。
-5. 点下方 **编曲**（或按 I）打开 16 步循环。点亮格子会立即试听并开始循环，再点则删音。面板标明声部、播放进度、当前盘音量与静音状态。编辑会暂停当前歌曲并接管为自己的循环；A/B 选择要编辑的盘。
-6. 点击编曲面板里的 **暂停循环** 停止循环。**P** 暂停整个雕塑，**M** 静音。
-
-LOCAL 播放时会暂时停用循环叠录；停止后恢复，已有音符不会被清除。
-试听文件可以用 `uv run python tools/render_song.py` 生成，输出到 `captures/recur-song.wav`。
-
-## 3. 视觉和保存
-
-- **H**：隐藏控制界面，进入大画面作品模式；再按 H 返回。
-- **1 / 2 / 3**：金色、银色、铜色。
-- **B**：切换明暗背景。
-- **方向键 / 鼠标拖动**：转动观察视角。
-- **滚轮**：拉近、拉远。
-- **E**：保存当前截图，同时保存节奏数据；输出在 `captures/`。
-- **O**：恢复最近保存的节奏。
-- **Backspace**：重置形态，但不清空已经写的节奏。
-- **Esc**：退出；问号按钮可以打开操作指南。
-
-音量先调低，再慢慢增加。DEMO 是有 CC0 授权的网上音乐，手动演奏与 LOCAL 是本地合成，均不是原视频配乐。
-
-## 4. 外置摄像头以后再试
-
-先关闭作品窗口，在终端输入：
-
-```powershell
-uv sync --extra camera
-uv run python app.py
-```
-
-接上外置摄像头，按 C 打开面板。先选 DEVICE 0；如果不对，停止连接后换
-DEVICE 1、2 或 3，再点 CONNECT。等待约两秒。
-
-镜像画面分为左上、右上、左下、右下四块；在不同区域活动会触发四种形变和声音。
-面板的 +/- 调节触发灵敏度。这是画面变化检测，**不是精确识别你的手指**，
-灯光突然变化也可能触发。不会录像、不会上传。实际外接硬件仍需你来验证。
-
-## 5. 目前不是最终提交版
-
-功能和视觉第一版已实现，代码和说明可以提交 GitHub，但还需要：
-
-- 你实际体验，决定哪些形态／音色要进一步改。
-- 核对 PROCESS 中已补入的真实试用观察；如进行复测，记录实际结果。
-- 在 PROCESS.md 补写真正发生的试用和你的设计决定。
-- 选择一张截图加入作业说明，检查 GitHub 公开仓库链接。
-
-我没有替你创建或推送 GitHub 仓库，也没有编造用户测试记录。
+Submit the public repository URL on Canvas. See `SUBMISSION.md` for the checklist,
+`PROCESS.md` for the reported trial and development decisions, and `CREDITS.md`
+for source attribution and AI assistance. Update and push the final version before
+the course deadline. The optional `web/` folder is an earlier browser study.

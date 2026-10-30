@@ -8,7 +8,7 @@ checks. The human-trial account below was supplied directly by the author on
 
 I wanted a visually ambitious, interactive artwork rather than an unchanged
 tutorial or a passive animation. I selected the later transformations in
-冷锋过境's *永生 / OUROBOROS* as a reference: repeated metallic structural units,
+Lengfeng Guojing's *Ouroboros* as a reference: repeated metallic structural units,
 radial segmentation, curling, closure and disassembly. I also liked the direct
 action/sound/image feedback in Patatap, without wanting to recreate its shapes.
 
@@ -208,3 +208,49 @@ for grid takeover, auto-start and silent-deck recovery. Demo and second-track
 playback checks measured about 59 FPS on the development computer. Dispatch
 lateness is measured separately from speaker/display latency. The one-minute
 rendered preview is development evidence, not a new human-participant retest.
+
+### Independent visual notes and English localization — 31 October 2026
+
+The author again reported twitching and referenced Patatap's distinct key effects,
+smooth combinations and simultaneous touch performance. They explicitly chose to
+retain black/gold metal and limited glass instead of adopting flat graphics.
+They also requested English everywhere except the project title.
+
+The previous model still retargeted one global object on successive key presses.
+The new default is therefore a polyphonic stage. Pulse, arcs, fan, ribbon, depth
+outlines and sparks have separate captured parameters, clocks and envelopes.
+New notes append to the composition; changes in the measured spectrum do not
+warp existing notes. The viewport remains stable. Sculpture mode remains on F2.
+Metal appearance uses a rounded cross-section normal/reflection treatment; sparse
+glass samples the resolved opaque image. This is explicitly a 2.5D material model.
+
+Keyboard and finger contacts have individual ownership. Held-key repeat is
+suppressed, and releasing one contact leaves other contacts and animation tails
+intact. Imported transients schedule the same voices, with conservative density
+limits and band-based orchestration rather than a scene-switch playlist. This
+mapping does not claim recognized melody notes or chords. Live overlays can
+continue while imported audio plays.
+
+English localization includes labels, notifications, help, file-chooser title,
+run/submission documentation and the retained browser study. Proper project-title
+characters are preserved. Non-ASCII imported filenames receive an English display
+label; native operating-system controls follow the OS locale.
+
+Verification distinguishes synthetic multi-finger events from physical hardware:
+the latter has not been tested. The reference site's public description was read;
+Windows browser interaction was stopped by the automation tool because it could
+not reliably verify the current URL. No reference animation footage was captured
+or imported. The author's observations above are real feedback; no additional
+participant approval or post-change human trial is claimed.
+
+Final development verification for this iteration: 57 Python unit tests and three
+retained browser-study tests passed. The real desktop test processed three keys
+and three synthetic fingers concurrently, confirmed independent release and held
+key suppression, and let all notes expire naturally. Import, loop takeover,
+silent-deck recovery and all ten sculpture forms passed their checks. A bundled
+recording playback check ran about 59.7 FPS; mean/max transient dispatch lateness
+was 8.2/19.4 ms. This is event dispatch timing, not a measurement of end-to-end
+speaker/display latency. Longer rendered playback exposed excess stacked outlines;
+automated note tails and bass accompaniment density were reduced while complete
+manual one-shot gestures were retained. English UI images and a one-minute
+H.264/AAC renderer preview are included as development evidence.

@@ -6,6 +6,7 @@ from .crescendo import Crescendo, CrescendoRenderer, smoothstep, ARCHITECTURE
 from .materials import SURFACE_FRAGMENT, beveled_box, polished_rib,panel_mesh
 from .motion import MusicalMotion
 from .morphology import Morphogenesis
+from .polyphony import PolyphonicStage,StageRenderer
 
 
 VERTEX = r'''
@@ -117,6 +118,9 @@ class SculptureRenderer:
         self.panel_vao=self.ctx.vertex_array(self.program,[(self.panel_vbo,'3f 3f 1f 3f 3f','in_pos','in_normal','in_material','in_block','in_block_normal')],index_buffer=self.panel_ibo)
         self.climax=Crescendo()
         self.motion=MusicalMotion()
+        self.stage=PolyphonicStage();self.stage_renderer=StageRenderer(self.ctx)
+        self.play_mode=True
+        self.motion.on_note=self.visual_note
         self.evolution=Morphogenesis()
         self.pose_texture=self.ctx.texture((216,36),4,data=bytes(216*36*16),dtype='f4')
         self.pose_texture.filter=(moderngl.NEAREST,moderngl.NEAREST)
@@ -177,6 +181,10 @@ class SculptureRenderer:
         self.motion.transport_beat=(music.beat_position if track_playing else
                                     performance.position/4. if performance and performance.playing else None)
         self.motion.update(model,dt)
+        self.stage.update(model,self.motion,dt)
+        if self.play_mode:
+            self.draw_stage(model,ui_bytes)
+            return
         score_playing=bool(performance and performance.playing)
         selected=bool(performance.auto if score_playing else music and music.auto and (music.path or model.playing))
         self.evolution.update(model,self.motion,dt,selected=selected,
@@ -228,6 +236,32 @@ class SculptureRenderer:
                 self.ctx.copy_framebuffer(self.opaque_fbo,self.msaa_fbo)
                 self.msaa_fbo.use();self.ctx.viewport=(0,stage_y,w,stage_h)
         self.ctx.disable(moderngl.DEPTH_TEST)
+        self.finish(model,ui_bytes)
+
+    def visual_note(self,voice,amount,source):
+        if not self.play_mode:return None
+        music=getattr(self,'music',None)
+        if source=='TRACK' and music and not music.auto:return None
+        return self.stage.note(voice,amount,source)
+
+    def draw_stage(self,model,ui_bytes):
+        w,h=self.size
+        self.msaa_fbo.use();self.ctx.viewport=(0,0,w,h)
+        self.msaa_fbo.clear(.001,.0015,.002,1.,depth=1.)
+        self.ctx.disable(moderngl.DEPTH_TEST)
+        height=h-265 if self.instrument_visible else h
+        bottom=205 if self.instrument_visible else 0
+        self.ctx.viewport=(0,bottom,w,height)
+        self.stage_renderer.prepare(self.stage,w/height,(float(w),float(h)))
+        self.stage_renderer.draw_pass(0)
+        self.ctx.copy_framebuffer(self.opaque_fbo,self.msaa_fbo)
+        self.opaque_color.use(3)
+        self.msaa_fbo.use();self.ctx.viewport=(0,bottom,w,height)
+        self.stage_renderer.draw_pass(1)
+        self.finish(model,ui_bytes)
+
+    def finish(self,model,ui_bytes):
+        w,h=self.size
         self.ctx.copy_framebuffer(self.fbo,self.msaa_fbo)
         self.bloom_fbo_a.use();self.ctx.viewport=(0,0,w//2,h//2)
         self.color.use(0);self.blur['source']=0;self.blur['extract']=True;self.blur['direction']=(2./w,0.)

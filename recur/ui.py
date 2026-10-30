@@ -42,24 +42,25 @@ class Interface:
         self.fader=None;self.fx_rect=None
         if self.hide:return pygame.image.tobytes(surf,'RGBA')
         self.text(surf,'RECUR',28,20,22,INK,True)
-        self.button(surf,'import_music','导入音乐',(143,20,94,28))
+        self.button(surf,'import_music','IMPORT',(143,20,94,28))
         music=getattr(renderer,'music',None)
         performance=getattr(renderer,'performance',None)
+        self.button(surf,'visual_mode','PLAY / F2' if renderer.play_mode else 'SCULPT / F2',(247,20,100,28),renderer.play_mode)
         if music:
             auto=performance.auto if demo and performance else music.auto
-            self.button(surf,'auto_music','VJ' if auto else '手动',(247,20,65,28),auto)
-        if renderer.evolution.strength>.9 and not demo:
-            self.text(surf,renderer.evolution.vj.label,650,27,11,GOLD)
+            self.button(surf,'auto_music','FOLLOW' if auto else 'LIVE ONLY',(357,20,82,28),auto)
         if music and music.path:
-            if not demo:self.text(surf,music.path.stem[:24],330,27,11,MUTED)
+            stem=music.path.stem
+            name=stem[:21] if stem.isascii() else 'Imported track'
+            if not demo:self.text(surf,name,450,27,11,MUTED)
             if not demo and music.analysis:
-                self.text(surf,f'{music.bpm:.0f} BPM / {int(music.beat_position)+1:03}',515,27,11,GOLD)
+                self.text(surf,f'{music.bpm:.0f} BPM',600,27,11,GOLD)
             self.button(surf,'music','|| MUSIC' if music.playing else '> MUSIC',(w-248,20,92,28),music.playing)
         self.button(surf,'help','?',(w-146,20,32,28),self.show_help)
         self.button(surf,'camera','C',(w-106,20,32,28),self.show_camera)
         self.button(surf,'mute','M',(w-66,20,38,28),synth.muted)
         if demo and performance:
-            self.text(surf,f'{performance.label} / {performance.chord_name} / {performance.bar+1:02}/32',330,27,12,GOLD)
+            self.text(surf,f'{performance.label} / {performance.chord_name} / {performance.bar+1:02}/32',450,27,12,GOLD)
         base=h-205
         # The stage stays almost text-free; the controls resemble an instrument.
         pygame.draw.line(surf,(42,43,40),(28,base),(w-28,base))
@@ -78,21 +79,26 @@ class Interface:
         available=w-560;pad_w=(available-5*8)//6;pad_x=(w-(pad_w*6+5*8))//2
         for i in range(6):
             r=pygame.Rect(pad_x+i*(pad_w+8),base+20,pad_w,34)
-            self.pad_rects.append(r);on=model.active_target==i
+            self.pad_rects.append(r);on=(i in renderer.stage.contacts.voices or model.flashes[i]>.1) if renderer.play_mode else model.active_target==i
             pygame.draw.rect(surf,(30+int(model.flashes[i]*15),29,25,245),r,border_radius=4)
             pygame.draw.rect(surf,GOLD if on else (54,55,51),r,1,border_radius=4)
-            label=self.font(12).render(KEYS[i],True,GOLD if on else INK)
+            label=self.font(11).render(KEYS[i]+' '+('PULSE','ARCS','FAN','RIBBON','PORTAL','SPARKS')[i] if renderer.play_mode else KEYS[i],True,GOLD if on else INK)
             surf.blit(label,label.get_rect(center=(r.centerx,r.y+10)))
             role=self.font(9).render(('KICK','MELODY','CHORD','PLUCK','BASS','PERC')[i],True,MUTED)
             surf.blit(role,role.get_rect(center=(r.centerx,r.y+25)))
-        for i,name in enumerate(NAMES[6:]):
+        for i,name in enumerate(NAMES[6:] if not renderer.play_mode else ()):
             self.button(surf,f'form_{6+i}',f'{4+i} {name}',(w//2-174+i*88,base-32,82,23),model.active_target==6+i)
+        if renderer.play_mode:
+            self.text(surf,'INDEPENDENT VOICES / COMBINE KEYS OR TOUCHES',w//2-166,base-26,11,MUTED)
+            if not renderer.stage.notes and not self.show_grid and not self.show_help:
+                self.text(surf,'PLAY  A  S  D  J  K  L',w//2-167,int(h*.40),24,INK)
+                self.text(surf,'Tap the canvas or pads. Each voice keeps its own tail.',w//2-201,int(h*.40)+38,12,MUTED)
         y=base+70;bx=w//2-177
         for i,(key,label,on) in enumerate([
             ('play','||' if model.playing else '>',model.playing),
             ('record','REC',model.recording),
             ('demo','DEMO',bool(music and music.playing and music.path==DEMO_PATH)),('score','LOCAL',demo),
-            ('grid','编曲',self.show_grid),('export','SAVE',False),('load','LOAD',False)]):
+            ('grid','LOOP',self.show_grid),('export','SAVE',False),('load','LOAD',False)]):
             self.button(surf,key,label,(bx+i*52,y,45,28),on)
         # A crossfader changes both audio gain and the sculpture mixture.
         self.fader=pygame.Rect(w//2-155,h-55,310,20)
@@ -121,14 +127,14 @@ class Interface:
             pygame.draw.rect(surf,PANEL,p,border_radius=6)
             self.button(surf,'deck_a','A',(p.x+12,p.y+8,34,22),model.selected_deck==0)
             self.button(surf,'deck_b','B',(p.x+52,p.y+8,34,22),model.selected_deck==1)
-            self.button(surf,'grid_play','暂停循环' if model.playing else '播放循环',(p.right-168,p.y+8,88,24),model.playing)
+            self.button(surf,'grid_play','PAUSE' if model.playing else 'PLAY',(p.right-168,p.y+8,88,24),model.playing)
             self.button(surf,'clear','CLEAR',(p.right-72,p.y+8,60,24))
-            self.text(surf,'16 步循环 · 点格子试听并开始播放',p.x+104,p.y+12,12,INK)
+            self.text(surf,'16 STEPS / Click a cell to audition and start',p.x+104,p.y+12,12,INK)
             step=model.step if model.selected_deck==0 else model.step_b
             for col in range(16):
                 self.text(surf,str(col+1),p.x+102+col*39,p.y+42,10,GOLD if col%4==0 else MUTED)
             for row in range(6):
-                self.text(surf,KEYS[row]+' '+('底鼓','旋律','和弦','拨弦','贝斯','打击')[row],p.x+14,p.y+64+row*19,11,MUTED)
+                self.text(surf,KEYS[row]+' '+('KICK','MELODY','CHORD','PLUCK','BASS','PERC')[row],p.x+14,p.y+64+row*19,11,MUTED)
                 for col in range(16):
                     r=pygame.Rect(p.x+98+col*39,p.y+63+row*19,34,14)
                     on=model.active_loop[row][col]
@@ -136,10 +142,10 @@ class Interface:
                     if col==step:pygame.draw.rect(surf,INK,r,1,border_radius=2)
                     self.cells.append((r,row,col))
             gain=math.cos(model.crossfade*math.pi/2) if model.selected_deck==0 else math.sin(model.crossfade*math.pi/2)
-            status='静音 · 按 M 开声音' if synth.muted else '循环播放中' if model.playing else '尚未播放'
-            self.text(surf,f'{status}  /  当前盘音量 {gain*100:.0f}%',p.x+14,p.y+184,11,GOLD)
+            status='MUTED / Press M' if synth.muted else 'LOOP PLAYING' if model.playing else 'STOPPED'
+            self.text(surf,f'{status}  /  DECK GAIN {gain*100:.0f}%',p.x+14,p.y+184,11,GOLD)
             if demo or (music and music.playing):
-                self.text(surf,'编辑会暂停当前歌曲，切换到你的循环',p.x+320,p.y+184,11,MUTED)
+                self.text(surf,'Editing pauses the track and plays your loop',p.x+320,p.y+184,11,MUTED)
         if self.show_camera:
             p=pygame.Rect(w-288,65,260,186)
             pygame.draw.rect(surf,PANEL,p,border_radius=6)
@@ -162,15 +168,15 @@ class Interface:
             pygame.draw.rect(surf,PANEL,(x,y,700,550),border_radius=9)
             self.text(surf,'RECUR / controls',x+28,y+26,24,INK,True)
             lines=[
-                'A S D J K L   Choose a form + play a sound on the selected deck.',
-                '4 5 6 7       Additional iris / corona / rosette / facet forms.',
+                'A S D J K L   Independent visual voices + pitched/percussive sound.',
+                'F2 / 4 5 6 7  Sculpture mode / original extra sculpture forms.',
                 'TAB           Select deck A or B. Each keeps its own form/loop.',
-                'CROSSFADER    Blend the two sounds AND the two geometries.',
+                'TOUCH         Multiple fingers play independent voices together.',
                 'TURNTABLES    Drag around either disc to scratch forward/back.',
                 'FX PAD        X: tone + torsion. Y: echo + spatial spread.',
                 'SPACE         Hold to brake both decks; release to recover.',
                 'R / >         Overdub into selected loop / play or stop loops.',
-                '编曲 / I      Click cells to audition and start your loop. A/B: deck.',
+                'LOOP / I      Click cells to audition and start your loop. A/B: deck.',
                 'T / DEMO      Play the CC0 demo; measured drums drive the motion.',
                 'G / LOCAL     32-bar score with continuous unfolding and reassembly.',
                 'S / J / Z X   Melodic notes / warm plucks / shift melody octave.',
@@ -178,7 +184,7 @@ class Interface:
                 'ARROWS/WHEEL  Orbit / zoom. 1,2,3 change metal. B: background.',
                 'H / F         Artwork-only view / fullscreen.',
                 'IMPORT / U    Choose music; drag-and-drop also works. Auto starts on.',
-                'V / Y         Pause imported music / switch VJ stage and manual.',
+                'V / Y         Pause the track / toggle imported-music visuals.',
                 'P / M         Pause / mute. E saves PNG + session; O restores.',
                 'C             Optional local camera input. Device 0..3.',
                 'BACKSPACE     Reset controls, preserving your loops.',

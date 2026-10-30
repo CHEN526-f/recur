@@ -17,14 +17,16 @@ class MusicalMotion:
         self.values=(0.,0.,0.,0.)
         self.phases=(0.,0.)
         self.voice_totals=[0.]*6
+        self.on_note=None
 
-    def note(self,voice,velocity=1.,gain=1.):
+    def note(self,voice,velocity=1.,gain=1.,source='LIVE'):
         amount=max(0.,min(1.,velocity*gain))
         self.voice_totals[voice]+=amount
         band=(0,2,1,1,0,2)[voice]
         self.pulses[band]=max(self.pulses[band],amount)
         if voice==0:self._kick=max(self._kick,amount)
         elif voice==4:self._kick=max(self._kick,amount*.35)
+        if amount>0. and self.on_note:return self.on_note(voice,amount,source)
 
     def update(self,model,dt):
         if model.paused:return

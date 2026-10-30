@@ -17,7 +17,7 @@ Open **http://localhost:8000** in Chrome, Edge or Firefox. `uv` is only hosting
 the development files here; it is not required by visitors to a published site.
 Do not double-click index.html: ES modules and Workers need an HTTP origin.
 
-Click **DEMO** or **导入音乐**. Browser audio starts after a deliberate click.
+Click **DEMO** or **IMPORT**. Browser audio starts after a deliberate click.
 Imported files are decoded and analysed locally, never uploaded. The existing
 track continues when an invalid import fails. Cancelling the chooser leaves it
 alone. A second load is rejected while analysis is in progress.

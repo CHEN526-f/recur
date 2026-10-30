@@ -93,7 +93,7 @@ class Instrument:
     def trigger(self,index,source="LIVE",deck=None):
         if not 0<=index<6:return
         deck=self.selected_deck if deck is None else deck
-        if source not in ("LOOP","DEMO","SCRATCH","FORM","GRID"):
+        if source not in ("LOOP","DEMO","SCRATCH","FORM","GRID","PAD"):
             self.select_shape(index,deck)
         self.energy_target=min(1.,self.energy_target+.16)
         gain=math.cos(self.crossfade*math.pi/2) if deck==0 else math.sin(self.crossfade*math.pi/2)

@@ -55,6 +55,7 @@ def main():
             if tick<round(start*fps):
                 renderer.motion.transport_beat=performance.position/4
                 renderer.motion.update(model,1/fps)
+                renderer.stage.update(model,renderer.motion,1/fps)
                 renderer.evolution.update(model,renderer.motion,1/fps,selected=True)
                 renderer.climax.score_target=performance.expansion
                 renderer.climax.update(model,1/fps)
