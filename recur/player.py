@@ -33,7 +33,7 @@ def run(save,restore):
         pygame.display.set_mode(size,flags,vsync=1);renderer=SculptureRenderer(size)
     except Exception as exc:
         pygame.quit();print('OpenGL 3.3 could not start: '+str(exc));return 1
-    pygame.display.set_caption('RECUR / 环生 — articulated instrument')
+    pygame.display.set_caption('RECUR / 环生 — stage VJ')
     model=Instrument();synth=Synth();ui=Interface();camera=MotionCamera()
     synth.muted=args.mute or args.smoke_test or args.interaction_test or args.music_test or args.rhythm_test
     music=MusicTrack();music.muted=synth.muted;renderer.music=music
@@ -51,7 +51,7 @@ def run(save,restore):
 
     def hit(index,source='LIVE',deck=None,event=None):
         if model.paused:return
-        if source=='LIVE' and music.path:music.set_auto(False)
+        if source=='LIVE':music.set_auto(False)
         if source=='LIVE' and demo:performance.set_auto(False)
         deck=model.selected_deck if deck is None else deck
         event=event or performance.live(index,performance.position/4 if demo else model.clock*model.bpm/60.)
@@ -70,6 +70,7 @@ def run(save,restore):
             renderer.draw(model,data);pygame.display.flip();pygame.event.pump()
             if demo:action('score')
             music.load(path);renderer.motion.reset();renderer.evolution.reset()
+            renderer.evolution.strength=1.
             synth.silence();model.playing=False;model.recording=False
             model.paused=False
             notify('自动跟随音乐 / V 暂停 / Y 切换自动与手动')
@@ -111,7 +112,14 @@ def run(save,restore):
             if demo:performance.set_auto(not performance.auto)
             else:music.set_auto(not music.auto)
         elif name.startswith('form_'):select_extra(int(name.split('_')[1]))
-        elif name=='play':model.playing=not model.playing
+        elif name in ('play','grid_play'):
+            desired=not model.playing
+            if demo:action('score')
+            if music.playing:music.pause(True)
+            model.playing=desired
+            if desired and music.auto:renderer.evolution.strength=1.
+            if model.playing and not any(any(row) for row in model.loop+model.loop_b):
+                ui.show_grid=True;notify('循环是空的：点亮格子即可试听并开始循环')
         elif name in ('deck_a','deck_b'):model.selected_deck=0 if name=='deck_a' else 1
         elif name=='record':
             if demo:notify('Stop LOCAL before recording');return
@@ -132,6 +140,7 @@ def run(save,restore):
                 backup_forms=(model.target,model.target_b)
                 model.playing=False;model.recording=False;model.crossfade_target=.45
                 renderer.motion.reset();renderer.climax.reset();renderer.evolution.reset()
+                renderer.evolution.strength=1.
                 synth.silence();synth.prepare(performance.score);performance.start()
             elif backup:
                 performance.stop();synth.silence()
@@ -245,8 +254,18 @@ def run(save,restore):
                             if r.collidepoint(pos):hit(i);used=True;break
                         for r,row,col in ui.cells:
                             if r.collidepoint(pos):
-                                if not demo:model.toggle_cell(row,col)
-                                else:notify('Stop LOCAL before editing')
+                                if demo:action('score')
+                                if music.playing:music.pause(True)
+                                model.paused=False
+                                model.toggle_cell(row,col)
+                                if model.active_loop[row][col]:
+                                    gain=math.cos(model.crossfade*math.pi/2) if model.selected_deck==0 else math.sin(model.crossfade*math.pi/2)
+                                    if gain<.1:model.crossfade=model.crossfade_target=float(model.selected_deck)
+                                    model.playing=True
+                                    if music.auto:renderer.evolution.strength=1.
+                                    hit(row,'GRID')
+                                    notify('已加入并试听 / 循环播放中' if not synth.muted else '已加入 / 当前静音，按 M 开声音')
+                                else:notify('已移除此音符')
                                 used=True;break
                         if not used and ui.fader and ui.fader.inflate(8,14).collidepoint(pos):
                             drag='fader';move_control(pos);used=True
@@ -313,7 +332,9 @@ def run(save,restore):
                 if frames==8:
                     r=next(r for r,row,col in ui.cells if row==1 and col==8)
                     pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=r.center))
-                if frames==10:assert model.loop[1][8];action('export')
+                if frames==10:
+                    assert model.loop[1][8] and model.playing,'Grid did not start its loop'
+                    action('export')
                 if frames==12:model.loop[1][8]=False;action('load')
                 if frames==14:assert model.loop[1][8];action('score')
                 if frames==15:
@@ -356,17 +377,25 @@ def run(save,restore):
                     assert sum(model.bands)>0,'Measured audio did not reach geometry'
                     Path('captures').mkdir(exist_ok=True)
                     pygame.image.save(renderer.capture(),'captures/music-import-proof.png')
+                    ui.show_grid=True
+                if frames==15:
+                    model.selected_deck=1
+                    model.crossfade=model.crossfade_target=0.
+                    r=next(r for r,row,col in ui.cells if row==0 and col==4)
+                    pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=r.center))
+                if frames==17:
+                    assert music.paused and model.playing,'Grid did not take over song playback'
+                    assert model.loop_b[0][4] and model.crossfade>.8,'Muted deck did not become audible'
                     running=False
             if args.rhythm_test:
                 rhythm_forms.add(model.target)
-                rhythm_controls.append(renderer.evolution.shape[0])
-                rhythm_joints.append(renderer.evolution.organism.children[:,1].copy())
+                rhythm_controls.append(renderer.evolution.vj.time)
+                rhythm_joints.append(renderer.evolution.vj.edits)
                 if time.monotonic()-rhythm_started>=12.:
                     assert len(sync_errors)>15 and kick_frames>5,'Drum motion missing'
                     assert len(rhythm_forms)==1,'Automatic playback cycled manual presets'
-                    assert max(rhythm_controls)-min(rhythm_controls)>.35,'Continuous curvature did not develop'
-                    assert max(max(j[i] for j in rhythm_joints)-min(j[i] for j in rhythm_joints)
-                               for i in range(18))>.3,'Independent child hinges did not develop'
+                    assert max(rhythm_controls)-min(rhythm_controls)>3.,'VJ spatial motion did not advance'
+                    assert max(rhythm_joints)>=1,'No music-led compositional edit occurred'
                     assert max(sync_errors)<.10,(f'Playback/visual delay max {max(sync_errors)*1000:.1f} ms; '
                                                  f'mean {sum(sync_errors)/len(sync_errors)*1000:.1f} ms; '
                                                  f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
@@ -377,6 +406,8 @@ def run(save,restore):
             renderer.draw(model,data)
             if args.interaction_test and frames==15:
                 pygame.image.save(renderer.capture(),'captures/qa/song-interface.png')
+            if args.music_test and frames==17:
+                pygame.image.save(renderer.capture(),'captures/qa/grid-interface.png')
             if args.rhythm_test and not running:
                 Path('captures').mkdir(exist_ok=True)
                 pygame.image.save(renderer.capture(),f'captures/rhythm-{music.path.stem}.png')
@@ -386,10 +417,10 @@ def run(save,restore):
                 print(f'SMOKE INCOMPLETE: {len(proof)}/{FORM_COUNT} forms');return 1
             print(f'SMOKE OK: {frames} frames; {len(proof)} forms; {renderer.ctx.info["GL_RENDERER"]}')
         if args.interaction_test:print('INTERACTION OK: two decks, loop, edit, restore, demo, reverse, FX, brake, help, resize')
-        if args.music_test:print('MUSIC OK: import, measured envelopes, continuous branches, manual takeover, pause, resume, UI')
+        if args.music_test:print('MUSIC OK: import, VJ/manual takeover, loop auto-start, silent-deck recovery, pause/resume, UI')
         if args.rhythm_test:
             print(f'RHYTHM OK: {music.path.name}; {len(sync_errors)} attacks; {kick_frames} kick attacks; '
-                  f'{len(rhythm_forms)} fixed base; curvature span {max(rhythm_controls)-min(rhythm_controls):.2f}; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
+                  f'{len(rhythm_forms)} fixed manual base; {max(rhythm_joints)} VJ edits; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
                   f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
     finally:
         camera.stop();music.close();synth.silence();pygame.quit()

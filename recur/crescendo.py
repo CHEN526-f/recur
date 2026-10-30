@@ -59,6 +59,7 @@ VERTEX = r'''
 #version 330
 #define ORGANIC_EVOLUTION
 in vec3 in_pos;in vec3 in_normal;in float in_material;
+in vec3 in_tile;in vec3 in_tile_normal;
 uniform mat4 projection;uniform mat4 view;
 uniform float expansion;uniform float phase;uniform float weights[10];uniform vec3 bands;
 uniform vec4 motion;uniform vec2 motion_phase;
@@ -82,8 +83,14 @@ void main(){
  center.xy*=.86+.14*emerge;
  center.z-=(1.-emerge)*2.8;
  mat3 rotation=rx(orbit.y*.3)*ry(orbit.x*.3);
- vec3 p=rotation*(center+local*in_pos*size*emerge);
- world=p;normal=rotation*local*in_normal;material=in_material;instance=id+648.;
+ float panel=max(evolution_strength,reassembly(weights)*.9);
+ vec3 tile=in_tile,tileNormal=in_tile_normal;
+ stageProfile(theta,band,reassembly(weights),tile,tileNormal);
+ vec3 vertex=mix(in_pos,tile,panel);
+ vec3 vertexNormal=normalize(mix(in_normal,tileNormal,panel));
+ vec3 p=rotation*(center+local*vertex*size*emerge);
+ mat3 cofactors=mat3(cross(local[1],local[2]),cross(local[2],local[0]),cross(local[0],local[1]));
+ world=p;normal=rotation*cofactors*vertexNormal;material=in_material;instance=id+648.;
  gl_Position=projection*view*vec4(p,1.);
 }
 '''
@@ -122,12 +129,22 @@ def blade_mesh():
 class CrescendoRenderer:
     def __init__(self, ctx, fragment_shader):
         self.program = ctx.program(vertex_shader=VERTEX, fragment_shader=fragment_shader)
-        vertices,indices=np.unique(blade_mesh(),axis=0,return_inverse=True)
+        from .materials import beveled_box
+        mesh=blade_mesh();tile=beveled_box()
+        pad=(-len(mesh))%len(tile)
+        if pad:mesh=np.concatenate((mesh,mesh[:pad]))
+        combined=np.concatenate((mesh,np.tile(tile,(len(mesh)//len(tile),1))),axis=1)
+        vertices,indices=np.unique(combined,axis=0,return_inverse=True)
         self.vbo = ctx.buffer(vertices.astype('f4').tobytes())
         self.ibo = ctx.buffer(indices.astype('u4').tobytes())
         self.vao = ctx.vertex_array(self.program, [
-            (self.vbo, '3f 3f 1f', 'in_pos', 'in_normal', 'in_material')
+            (self.vbo, '3f 3f 1f 3f 3f', 'in_pos', 'in_normal', 'in_material','in_tile','in_tile_normal')
         ],index_buffer=self.ibo)
+        from .materials import panel_mesh
+        panel,indices=np.unique(panel_mesh(),axis=0,return_inverse=True)
+        self.panel_vbo=ctx.buffer(panel.astype('f4').tobytes())
+        self.panel_ibo=ctx.buffer(indices.astype('u4').tobytes())
+        self.panel_vao=ctx.vertex_array(self.program,[(self.panel_vbo,'3f 3f 1f 3f 3f','in_pos','in_normal','in_material','in_tile','in_tile_normal')],index_buffer=self.panel_ibo)
 
     def draw(self, state, projection, view, orbit, palette, energy, aspect, surface_pass=0, resolution=(1280,820), weights=None, bands=None, phase=0., motion=(0.,0.,0.,0.), motion_phase=(0.,0.), evolution=None):
         if state.amount < .008 and (evolution is None or evolution.strength<.008):
@@ -149,5 +166,5 @@ class CrescendoRenderer:
                            ('evolution_detail',tuple(evolution.detail) if evolution else (.3,0.,.4,.5)),
                            ('evolution_phase',tuple(evolution.phases) if evolution else (0.,0.)),('organism_pose',5)):
             if name in self.program:self.program[name].value=value
-        self.vao.render(instances=1296)
+        (self.panel_vao if evolution and evolution.strength>.9999 else self.vao).render(instances=1296)
 

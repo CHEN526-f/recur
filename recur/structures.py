@@ -78,6 +78,10 @@ void articulate(float theta,float band,float weights[10],inout vec3 p,inout mat3
  frame=rz(detail*.22*sin(theta*6.-beat*4.+band))
        *ry(body*.65*sin(theta*2.-beat+band*.9)+kick*.42)*frame;
 }
+float reassembly(float weights[10]){
+ float squared=0.;for(int k=0;k<10;k++)squared+=weights[k]*weights[k];
+ return smoothstep(.02,.95,clamp((1.-squared)*2.,0.,1.));
+}
 void structure(float theta,float band,float t,vec3 music,float weights[10],float expansion,
                out vec3 center,out mat3 local,out float size){
  center=vec3(0.);local=mat3(0.);size=1.;
@@ -94,6 +98,17 @@ void structure(float theta,float band,float t,vec3 music,float weights[10],float
  center*=1.+music.x*.035+expansion*(.40+band*.14);
  local*=1.+music.z*.08;
  articulate(theta,band,weights,center,local);
+ float bridge=reassembly(weights);
+ if(bridge>.0001){
+   float u=theta/(PI*2.),sector=floor(u*6.),q=fract(u*6.);
+   float signature=0.;for(int k=0;k<10;k++)signature+=weights[k]*float(k+1);
+   float a=sector*PI/3.+q*(.65+.4*sin(signature)) + t*.12;
+   float radius=.32+q*(1.38+band*.08)+band*.09;
+   vec3 assembled=vec3(cos(a)*radius,sin(a)*radius,(band-1.)*.15+.3*sin(q*PI)*sin(sector*PI+signature));
+   center=mix(center,assembled,bridge);
+   mat3 folded=rz(a)*ry(.65*sin(q*PI*2.+signature))*mat3(.3,0.,0.,0.,.18,0.,0.,0.,.32);
+   local=local*(1.-bridge)+folded*bridge;
+ }
 #ifdef ORGANIC_EVOLUTION
  remodel(theta,band,center,local);
 #endif

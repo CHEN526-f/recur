@@ -93,7 +93,7 @@ class Instrument:
     def trigger(self,index,source="LIVE",deck=None):
         if not 0<=index<6:return
         deck=self.selected_deck if deck is None else deck
-        if source not in ("LOOP","DEMO","SCRATCH","FORM"):
+        if source not in ("LOOP","DEMO","SCRATCH","FORM","GRID"):
             self.select_shape(index,deck)
         self.energy_target=min(1.,self.energy_target+.16)
         gain=math.cos(self.crossfade*math.pi/2) if deck==0 else math.sin(self.crossfade*math.pi/2)
@@ -101,7 +101,7 @@ class Instrument:
         self.band_targets[band]=min(1.,self.band_targets[band]+(.70 if index==0 else .40)*gain)
         self.flashes[index]=1.
         self.hits+=1;self.last_source=source
-        if self.recording and source not in ("LOOP","DEMO","SCRATCH"):
+        if self.recording and source not in ("LOOP","DEMO","SCRATCH","GRID"):
             step=round(self.deck_times[deck]/self.step_seconds)%16
             (self.loop if deck==0 else self.loop_b)[index][step]=True
 

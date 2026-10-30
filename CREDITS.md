@@ -37,13 +37,13 @@ WebGL2, Web Audio and Workers without third-party runtime JavaScript packages.
 
 ## AI assistance
 
-The continuous structural controller uses standard Lorenz-type differential
-equations, modulated by audio. The numerical integration, music mapping and
-construction code are project implementations; no simulation code was copied.
-The branch hierarchy, damped joint integration, tangent-field spine and pose
-texture are implemented in this repository. Reference imagery informed the
-desired richness and material direction; its meshes and footage are not assets
-in the artwork.
+The earlier articulated-branch study uses standard Lorenz-type differential
+equations and remains in the development source. The current automatic VJ mode
+uses project implementations of parametric tunnels, mirrored fans, folded grids,
+spheres/toruses, ribbons and prism surfaces. Its music-led director, folded
+reassembly and pose-texture integration are implemented here; no VJ footage or
+simulation implementation was copied. Reference imagery informed the desired
+richness and material direction; its meshes and footage are not artwork assets.
 
 OpenAI Codex assisted with interpretation of the brief, code, geometry and
 material implementation, sound synthesis, debugging, automated checks and

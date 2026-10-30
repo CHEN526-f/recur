@@ -45,9 +45,11 @@ class Interface:
         self.button(surf,'import_music','导入音乐',(143,20,94,28))
         music=getattr(renderer,'music',None)
         performance=getattr(renderer,'performance',None)
-        if demo or (music and music.path):
+        if music:
             auto=performance.auto if demo and performance else music.auto
-            self.button(surf,'auto_music','演化' if auto else '手动',(247,20,65,28),auto)
+            self.button(surf,'auto_music','VJ' if auto else '手动',(247,20,65,28),auto)
+        if renderer.evolution.strength>.9 and not demo:
+            self.text(surf,renderer.evolution.vj.label,650,27,11,GOLD)
         if music and music.path:
             if not demo:self.text(surf,music.path.stem[:24],330,27,11,MUTED)
             if not demo and music.analysis:
@@ -90,7 +92,7 @@ class Interface:
             ('play','||' if model.playing else '>',model.playing),
             ('record','REC',model.recording),
             ('demo','DEMO',bool(music and music.playing and music.path==DEMO_PATH)),('score','LOCAL',demo),
-            ('grid','16',self.show_grid),('export','SAVE',False),('load','LOAD',False)]):
+            ('grid','编曲',self.show_grid),('export','SAVE',False),('load','LOAD',False)]):
             self.button(surf,key,label,(bx+i*52,y,45,28),on)
         # A crossfader changes both audio gain and the sculpture mixture.
         self.fader=pygame.Rect(w//2-155,h-55,310,20)
@@ -115,20 +117,29 @@ class Interface:
         self.button(surf,'bpm_up','+',(263,h-88,30,24))
         self.text(surf,'BPM',234,h-52,9,MUTED)
         if self.show_grid:
-            p=pygame.Rect(w//2-370,base-156,740,141)
+            p=pygame.Rect(w//2-370,base-238,740,202)
             pygame.draw.rect(surf,PANEL,p,border_radius=6)
             self.button(surf,'deck_a','A',(p.x+12,p.y+8,34,22),model.selected_deck==0)
             self.button(surf,'deck_b','B',(p.x+52,p.y+8,34,22),model.selected_deck==1)
-            self.button(surf,'clear','CLEAR',(p.right-72,p.y+8,60,22))
+            self.button(surf,'grid_play','暂停循环' if model.playing else '播放循环',(p.right-168,p.y+8,88,24),model.playing)
+            self.button(surf,'clear','CLEAR',(p.right-72,p.y+8,60,24))
+            self.text(surf,'16 步循环 · 点格子试听并开始播放',p.x+104,p.y+12,12,INK)
             step=model.step if model.selected_deck==0 else model.step_b
+            for col in range(16):
+                self.text(surf,str(col+1),p.x+102+col*39,p.y+42,10,GOLD if col%4==0 else MUTED)
             for row in range(6):
-                self.text(surf,KEYS[row],p.x+14,p.y+39+row*15,9,MUTED)
+                self.text(surf,KEYS[row]+' '+('底鼓','旋律','和弦','拨弦','贝斯','打击')[row],p.x+14,p.y+64+row*19,11,MUTED)
                 for col in range(16):
-                    r=pygame.Rect(p.x+39+col*43,p.y+38+row*15,38,11)
+                    r=pygame.Rect(p.x+98+col*39,p.y+63+row*19,34,14)
                     on=model.active_loop[row][col]
                     pygame.draw.rect(surf,GOLD if on else (37,40,39),r,border_radius=2)
                     if col==step:pygame.draw.rect(surf,INK,r,1,border_radius=2)
                     self.cells.append((r,row,col))
+            gain=math.cos(model.crossfade*math.pi/2) if model.selected_deck==0 else math.sin(model.crossfade*math.pi/2)
+            status='静音 · 按 M 开声音' if synth.muted else '循环播放中' if model.playing else '尚未播放'
+            self.text(surf,f'{status}  /  当前盘音量 {gain*100:.0f}%',p.x+14,p.y+184,11,GOLD)
+            if demo or (music and music.playing):
+                self.text(surf,'编辑会暂停当前歌曲，切换到你的循环',p.x+320,p.y+184,11,MUTED)
         if self.show_camera:
             p=pygame.Rect(w-288,65,260,186)
             pygame.draw.rect(surf,PANEL,p,border_radius=6)
@@ -159,7 +170,7 @@ class Interface:
                 'FX PAD        X: tone + torsion. Y: echo + spatial spread.',
                 'SPACE         Hold to brake both decks; release to recover.',
                 'R / >         Overdub into selected loop / play or stop loops.',
-                '16 / I        Show the editable loop; A/B choose the deck.',
+                '编曲 / I      Click cells to audition and start your loop. A/B: deck.',
                 'T / DEMO      Play the CC0 demo; measured drums drive the motion.',
                 'G / LOCAL     32-bar score with continuous unfolding and reassembly.',
                 'S / J / Z X   Melodic notes / warm plucks / shift melody octave.',
@@ -167,7 +178,7 @@ class Interface:
                 'ARROWS/WHEEL  Orbit / zoom. 1,2,3 change metal. B: background.',
                 'H / F         Artwork-only view / fullscreen.',
                 'IMPORT / U    Choose music; drag-and-drop also works. Auto starts on.',
-                'V / Y         Pause imported music / toggle continuous evolution.',
+                'V / Y         Pause imported music / switch VJ stage and manual.',
                 'P / M         Pause / mute. E saves PNG + session; O restores.',
                 'C             Optional local camera input. Device 0..3.',
                 'BACKSPACE     Reset controls, preserving your loops.',

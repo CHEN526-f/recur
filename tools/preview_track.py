@@ -31,6 +31,7 @@ def main():
     music=MusicTrack();music.load(args.music);music.muted=True
     pcm=pygame.sndarray.array(pygame.mixer.Sound(args.music))
     renderer=SculptureRenderer(size);renderer.instrument_visible=False;renderer.music=music
+    renderer.evolution.strength=1.
     renderer.motion.detect_external=False
     model=Instrument();overlay=bytes(size[0]*size[1]*4)
     output=Path(args.output);output.parent.mkdir(parents=True,exist_ok=True)
@@ -59,7 +60,7 @@ def main():
             if proof<len(checkpoints) and time>=checkpoints[proof]:
                 im=Image.fromarray(pixels);im.save(output.with_name(f'{output.stem}-{proof+1}.png'))
                 im.thumbnail((356,212));x=(proof%4)*360;y=(proof//4)*240
-                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s',fill='#e5d9ad')
+                sheet.paste(im,(x,y+25));draw.text((x+8,y+6),f'{time:.2f}s / {renderer.evolution.vj.label}',fill='#e5d9ad')
                 proof+=1
             pygame.display.flip()
         for packet in video.encode():container.mux(packet)

@@ -1,9 +1,29 @@
 # Visual refinement — iteration log
 
+## Current: stage VJ and spatial reassembly — 30 October 2026
+
+The author rejected the hierarchy below as still spring-like. The current
+runtime uses six spatial generators in `recur/vj.py`: moving polygon tunnels,
+mirrored fans, folded surfaces, crystal spheres/toruses, ribbons and prism rooms.
+Their facet, tapered-blade and rounded-crystal profiles differ from the old C rib.
+Musical attacks, novelty, phrasing and recent usage drive the stage director.
+There is no fixed playlist; each generator also develops its internal geometry.
+
+Edits pass through an ordered folded surface or mirror assembly. The end lands
+on an estimated beat; drum articulation still uses the measured transient. The
+original manual A-to-S transition now uses a segmented folded bridge as well.
+The original ten shapes remain manual choices. Flat-panel normal transforms are
+corrected for anisotropic scale, and their light level is slightly reduced.
+
+Current evidence: `demo.mp4`, `evolution-sequence.jpg`, `manual-reassembly.jpg`,
+`vj-families.jpg` and `loop-editor.png`. The loop grid now auditions and starts on
+cell addition and exposes play/mute/deck state. These are development checks.
+The following sections document superseded approaches and the feedback on them.
+
 ## Articulated hierarchy — 30 October 2026
 
 The next critique was that continuous global bending still read as a few familiar
-outlines. The current Python version therefore adds six parent branches and
+outlines. That iteration added six parent branches and
 three child fans per parent across up to nine layers. Parent folding/stretching,
 child winding/roll/growth and a locally varying spine are separate motions.
 Distinct initial joint states avoid synchronized unfolding. Measured notes apply

@@ -7,6 +7,10 @@ Metallic, repeated ribs form a sculpture that can close, unfold, curl, grow and
 disassemble in real time. The same action plays an original synthesized sound
 and changes the actual geometry. This is not a video player or an AI API wrapper.
 
+Automatic playback now has a **stage VJ mode**: depth tunnels, mirrored fans,
+folding surfaces, crystal orbits, flowing sheets and prism rooms. They develop
+with the music and reassemble through shared folded compositions.
+
 The original six forms are preserved: serpent, open ribbon, curling bloom,
 crystal field, orbital bands and folded tide. Four additional forms — iris,
 corona, rosette and facet — are selected separately with 4/5/6/7. Crossfading,
@@ -63,7 +67,7 @@ until a note or the demonstration is triggered.
 | Tab / drag discs / fader | Select deck, scratch its phrase, blend A/B sound and shape |
 | R / OVERDUB | Record live notes into a repeating 16-step pattern |
 | PLAY LOOP | Play or stop the pattern |
-| Click a grid cell | Add or remove a note; 16 cells = one bar of sixteenth notes |
+| 编曲 / I / click a grid cell | Open the 16-step editor; adding a cell auditions it and starts the loop. Editing pauses DEMO/LOCAL. |
 | T / DEMO | Play/pause the bundled CC0 electronic recording with measured beat following |
 | G / LOCAL | Play/stop the original 32-bar synth composition (about 71 seconds at 108 BPM) |
 | Z / X | Lower or raise the live S/J melody by one octave |
@@ -75,7 +79,7 @@ until a note or the demonstration is triggered.
 | E / SAVE | Save PNG and `captures/latest-session.json` |
 | O / RESTORE | Restore the saved pattern, tempo and material |
 | Drop an audio file / V | Play local music with measured frequency response / pause or resume |
-| IMPORT / U / Y | Open the music chooser / shortcut / toggle automatic forms and manual control |
+| IMPORT / U / Y | Open the music chooser / shortcut / toggle VJ and manual control |
 | Backspace | Reset sculpture, preserving your composition |
 | ? / Escape | Guide / close guide or exit |
 
@@ -107,27 +111,40 @@ track if it was playing before. Live S/J notes and D/K accompaniment follow the
 same harmonic palette. Each instrument has independent polyphony so melodic
 notes cannot cut off the drum or bass channels.
 
-DEMO, imported tracks and LOCAL use **a hierarchy of articulated branches**.
-Six parent branches each contain three child fans, repeated through up to nine
-depth layers. Parents fold and stretch while their children wind, roll and open
-independently. Joint transforms fade at shared edges to keep the structure joined.
-The spine integrates a varying tangent field, so its bend also changes locally.
+DEMO, imported tracks, LOCAL and loop playback can use **stage VJ direction**.
+Six spatial generators provide different visual structures: an advancing polygon
+tunnel, mirrored blade fans, folded tile surfaces, crystal spheres/toruses,
+flowing ribbons and prism rooms. Flat facets, tapered blades and rounded crystals
+replace the previous automatic mode's repeated C-shaped ribs. Their geometry,
+folding and density continue changing between musical edits.
 
-Measured percussion injects forces into overlapping branch regions; the spectrum,
-note history and coupled continuous dynamics develop their angles. Damped joints
-smooth these forces. There is no timed list of silhouettes, and the construction
-does not simply return to a few saved poses. Faster transient recoil remains
-separate from the slower unfolding. Musical energy increases the visible layers
-and overall reach. Each instance's position and local frame are calculated once
-and shared by both rendering passes through a floating-point pose texture.
+The director responds to measured attacks, spectral changes and musical phrasing.
+It chooses a composition using audio features and recent usage, rather than a
+fixed round-robin playlist. Reassembly goes through an ordered folded surface or
+mirror arrangement, with the arrival placed on an estimated beat. Measured drum
+recoil remains immediate. This is generative VJ direction with six visual families;
+it does not claim unlimited unrelated styles or guaranteed beat detection.
 
-The ten shapes remain manual starting points. Y / 演化 toggles automatic
-development; shape keys take over while a smaller live articulation retains the
-chosen silhouette. Stopping LOCAL restores the previous chosen forms and loops.
-P freezes the geometry; silent passages do not invent new motion. Existing metal,
-glass, exposure and bloom settings are retained.
+The ten original manual forms remain available. A -> S now folds into a segmented
+mirror composition before settling into the ribbon, instead of only blending ring
+and line coordinates. The crossfader also uses this reassembly. Y / VJ switches
+back to automatic direction. P freezes the geometry. Metal, limited glass and
+restrained bloom remain; the brighter flat panels use a slightly lower light level.
+Positions and local frames are shared by both surface passes through a pose texture.
 
-![Continuous development while the manual target stays fixed](docs/evolution-sequence.jpg)
+The **编曲** panel labels its instruments, steps, playhead, playback state and deck
+gain. Clicking an empty cell auditions the note and starts the loop; clicking it
+again removes it. Editing exits LOCAL or pauses the imported recording, preserving
+its loops. A silent selected deck is brought into the mix so the new note is audible.
+If muted, the panel explicitly says to press M. The panel also has its own loop
+play/pause button. Original overdub and save/restore remain available.
+
+![VJ development while the manual target stays fixed](docs/evolution-sequence.jpg)
+
+[Manual A-to-S reassembly sequence](docs/manual-reassembly.jpg) ·
+[Labelled loop editor](docs/loop-editor.png) ·
+[Spatial generator study](docs/vj-families.jpg)
+
 
 Generate a WAV preview of the authored score with
 `uv run python tools/render_song.py`; files are written to `captures/recur-song.wav`
@@ -166,8 +183,9 @@ The external-camera path has **not yet been tested with the user's hardware**.
 - `recur/audio.py`: six original NumPy-generated stereo patches and a bass drop.
 - `recur/composition.py`: pitched live notes, four harmonies and a 32-bar score.
 - `recur/motion.py`: transient envelopes and continuous musical articulation.
-- `recur/morphology.py`: musical structural history and the renderer's pose lookup.
-- `recur/organism.py`: parent/child joint dynamics, connected spine and instance poses.
+- `recur/morphology.py`: VJ/manual mode blending and the renderer's pose lookup.
+- `recur/vj.py`: music-led composition direction, six spatial generators and ordered reassembly.
+- `recur/organism.py`: the earlier articulated-branch study, retained as development source.
 - `recur/analysis.py`: measured attacks and tempo/beat estimation; no preset routes.
 - `recur/camera.py`: optional local motion input on a background thread.
 - `recur/ui.py`: interface rendered by Pygame and composited over the 3D scene.
@@ -198,7 +216,7 @@ of the opaque scene; it does not trace multiple glass layers or off-screen objec
 Use the visible **导入音乐** button (U), drop a local WAV/MP3/OGG/FLAC file into
 the app, or launch with `uv run python app.py --music "path/to/track.mp3"`.
 Playback and automatic following start on import. Measured low/mid/high envelopes
-drive the continuously developing structure. Y or the 演化/手动 button toggles
+drive the continuously developing structure. Y or the VJ/手动 button toggles
 automatic development; shape keys take over manually.
 There is no automatic pitch recognition,
 hand tracking or in-app video export. The loop is one bar; recording is note quantization,
@@ -221,7 +239,7 @@ the current track available and displays feedback. Empty or corrupt session data
 is rejected without replacing the current loop. Camera and audio-device failures
 also leave visual controls available.
 
-Automated development checks: 46 Python unit tests, ten-form OpenGL smoke test,
+Automated development checks: 48 Python unit tests, ten-form OpenGL smoke test,
 keyboard/loop/save/restore interaction check, and separate demo/import rhythm
 checks. These checks do not establish musical preference or replace the human
 trial described in PROCESS.md. Playback performance depends on hardware, window

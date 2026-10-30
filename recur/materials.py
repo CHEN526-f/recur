@@ -7,6 +7,7 @@ SURFACE_FRAGMENT = r'''
 #version 330
 in vec3 world; in vec3 normal; in float material; in float instance;
 uniform float energy; uniform int palette;
+uniform float evolution_strength;
 uniform vec3 camera_position;
 uniform int surface_pass;
 uniform sampler2D opaque_scene;
@@ -65,6 +66,7 @@ void main(){
    color+=vec3(.15,.28,.31)*pow(1.-nv,3.)*.32;
  }
  color+=f0*energy*.025;
+ color*=mix(1.,.86,evolution_strength);
  frag=vec4(color,1.);
 }
 '''
@@ -113,3 +115,10 @@ def polished_rib():
             n/=np.linalg.norm(n)
             rows.append([.015+.028*math.cos(angle),.023*math.sin(angle),z,*n,1.])
     return np.asarray(rows,dtype='f4')
+
+
+def panel_mesh():
+    """Both morph inputs coincide for the efficient fully automatic panel pass."""
+    tile=beveled_box()
+    mesh=np.column_stack((tile,np.abs(tile[:,4])))
+    return np.concatenate((mesh,tile),axis=1).astype('f4')

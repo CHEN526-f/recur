@@ -32,6 +32,12 @@ class InteractionTests(unittest.TestCase):
         self.assertEqual(m.advance(.002),[0])
         self.assertEqual(m.advance(.001),[])
 
+    def test_grid_audition_neither_changes_shape_nor_overdubs_another_cell(self):
+        m=Instrument(recording=True)
+        m.trigger(1,'GRID')
+        self.assertEqual(m.target,0)
+        self.assertFalse(any(m.loop[1]))
+
     def test_hold_and_release(self):
         m=Instrument(holding=True)
         for _ in range(120):m.advance(1/60)

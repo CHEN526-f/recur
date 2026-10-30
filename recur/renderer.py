@@ -3,7 +3,7 @@ import math
 import numpy as np
 import moderngl
 from .crescendo import Crescendo, CrescendoRenderer, smoothstep, ARCHITECTURE
-from .materials import SURFACE_FRAGMENT, beveled_box, polished_rib
+from .materials import SURFACE_FRAGMENT, beveled_box, polished_rib,panel_mesh
 from .motion import MusicalMotion
 from .morphology import Morphogenesis
 
@@ -31,18 +31,18 @@ void main(){
  vec3 center;mat3 local;float size;
  structure(theta,band,phase,bands,weights,expansion,center,local,size);
  local=local*ry(twist*.22+charge*.13);
- float blockMix=weights[3]+weights[9];
- float plate=texelFetch(organism_pose,ivec2(int(mod(id,216.)),int(band)*4),0).w;
- blockMix=mix(blockMix,plate,evolution_strength);
- vec3 block=in_block;block.y*=mix(1.,.10,evolution_strength);
- vec3 blockNormal=in_block_normal*vec3(1.,mix(1.,10.,evolution_strength),1.);
+ float blockMix=max(weights[3]+weights[9],reassembly(weights)*.9);
+ blockMix=mix(blockMix,1.,evolution_strength);
+ vec3 block=in_block,blockNormal=in_block_normal;
+ stageProfile(theta,band,reassembly(weights),block,blockNormal);
  vec3 pos=mix(in_pos,block,blockMix);
  vec3 norm=normalize(mix(in_normal,blockNormal,blockMix)+vec3(.000001));
  center*=1.+(fx.y-.3)*.12;
  float opening=smoothstep(0.,.8,expansion);
  mat3 rotation=rx(orbit.y*(1.-opening*.7))*ry(orbit.x*(1.-opening*.7));
  vec3 p=rotation*(center+local*pos*size);
- world=p;normal=rotation*local*norm;material=in_material;instance=id;
+ mat3 cofactors=mat3(cross(local[1],local[2]),cross(local[2],local[0]),cross(local[0],local[1]));
+ world=p;normal=rotation*cofactors*norm;material=in_material;instance=id;
  gl_Position=projection*view*vec4(p,1.);
 }
 '''
@@ -111,6 +111,10 @@ class SculptureRenderer:
         self.vbo=self.ctx.buffer(vertices.astype('f4').tobytes())
         self.ibo=self.ctx.buffer(indices.astype('u4').tobytes())
         self.vao=self.ctx.vertex_array(self.program,[(self.vbo,'3f 3f 1f 3f 3f','in_pos','in_normal','in_material','in_block','in_block_normal')],index_buffer=self.ibo)
+        panel,indices=np.unique(panel_mesh(),axis=0,return_inverse=True)
+        self.panel_vbo=self.ctx.buffer(panel.astype('f4').tobytes())
+        self.panel_ibo=self.ctx.buffer(indices.astype('u4').tobytes())
+        self.panel_vao=self.ctx.vertex_array(self.program,[(self.panel_vbo,'3f 3f 1f 3f 3f','in_pos','in_normal','in_material','in_block','in_block_normal')],index_buffer=self.panel_ibo)
         self.climax=Crescendo()
         self.motion=MusicalMotion()
         self.evolution=Morphogenesis()
@@ -174,15 +178,14 @@ class SculptureRenderer:
                                     performance.position/4. if performance and performance.playing else None)
         self.motion.update(model,dt)
         score_playing=bool(performance and performance.playing)
-        selected=bool(performance.auto if score_playing else music and music.path and music.auto)
-        live=.38*max(self.motion.activity,model.charge) if not selected else 1.
-        self.evolution.update(model,self.motion,dt,selected=live,
-                              running=bool(track_playing or score_playing or (not selected and live>.01)))
+        selected=bool(performance.auto if score_playing else music and music.auto and (music.path or model.playing))
+        self.evolution.update(model,self.motion,dt,selected=selected,
+                              running=bool(track_playing or score_playing or model.playing))
         self.climax.score_target=(music.expansion if track_playing else
                                   performance.expansion if performance and performance.playing else None)
         self.climax.update(model,dt)
         if self.evolution.strength>.00001:
-            pose=self.evolution.organism.build(self.evolution,self.motion,self.climax.amount)
+            pose=self.evolution.vj.build(self.evolution,self.motion,self.climax.amount)
             self.pose_texture.write(pose.tobytes())
         self.pose_texture.use(5)
         self.zoom=ease(self.zoom,self.zoom_target,6.,dt)
@@ -219,7 +222,7 @@ class SculptureRenderer:
         self.ctx.enable(moderngl.DEPTH_TEST)
         for surface_pass in (0,1):
             self.program['surface_pass']=surface_pass
-            self.vao.render(instances=648)
+            (self.panel_vao if self.evolution.strength>.9999 else self.vao).render(instances=648)
             self.climax_renderer.draw(self.climax,proj,view,self.orbit,self.palette,model.energy,w/stage_h,surface_pass,(float(w),float(h)),model.weights,model.bands,phase,self.motion.values,self.motion.phases,self.evolution)
             if surface_pass==0:
                 self.ctx.copy_framebuffer(self.opaque_fbo,self.msaa_fbo)

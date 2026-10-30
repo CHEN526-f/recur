@@ -174,3 +174,37 @@ branch. The repository is public. Website deployment was not performed; its
 workflow remains manual-only. A final documentation commit records the actual
 repository address and submission steps. Canvas submission remains the author's
 separate final action.
+
+### Stage VJ direction and loop-editor feedback — 30 October 2026
+
+The author rejected the articulated hierarchy as still looking like springs and
+asked for stage VJ visuals. They also identified the A-to-S transition as a ring
+breaking into a line, and said clicking the loop grid seemed to do nothing.
+These observations changed the direction of the current runtime.
+
+Automatic playback now uses six different spatial generators, with facets,
+tapered blades and rounded crystals instead of the same curved rib everywhere.
+A director chooses musical edits from real attacks, spectral novelty, phrasing
+and recent composition usage. This is an explicit set of generative visual
+families, not a claim of endless unrelated visual styles. Folding, depth travel,
+surface curvature and spherical/torus reconfiguration continue within families.
+Transitions pass through ordered folded/mirrored arrangements. Intermediate
+renders exposed an unordered particle-cloud appearance; an ordered assembly
+bridge and a latitude/longitude crystal layout improved that behavior. Manual
+A-to-S transitions likewise use a folded mirror bridge; the original ten manual
+forms remain available.
+
+The loop grid previously only toggled stored cells; playback could be stopped,
+LOCAL could block editing, or the selected deck could be silent in the crossfade.
+Adding a cell now auditions it and starts loop playback. Editing pauses the track
+or exits LOCAL and restores the user's pattern. A silent edited deck is moved
+into the mix. Labels explain voices and steps; a playhead, dedicated play/pause,
+deck gain and explicit mute status expose the actual state. GRID auditions do
+not accidentally record a second cell or change the manual shape.
+
+Verification includes 48 unit tests, real OpenGL renders of all six generators
+and the A-to-S transition, all ten manual forms, and actual posted mouse events
+for grid takeover, auto-start and silent-deck recovery. Demo and second-track
+playback checks measured about 59 FPS on the development computer. Dispatch
+lateness is measured separately from speaker/display latency. The one-minute
+rendered preview is development evidence, not a new human-participant retest.
