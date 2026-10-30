@@ -254,3 +254,35 @@ speaker/display latency. Longer rendered playback exposed excess stacked outline
 automated note tails and bass accompaniment density were reduced while complete
 manual one-shot gestures were retained. English UI images and a one-minute
 H.264/AAC renderer preview are included as development evidence.
+
+### Correction: preserve the model, layer local motion — 31 October 2026
+
+The author clarified that the flat version's independent triggering and smooth
+release were the right interaction direction, while the visual replacement was
+wrong. They rejected an intermediate render of intersecting complete sculptures
+and explicitly selected one main construction with different regions responding.
+That intermediate approach was not accepted as the final artwork.
+
+The current default therefore restores the original 3D fin/facet vocabulary,
+metal/glass surface shader and depth-tested rendering. Independent notes now add
+local opening, folding, petal, turning, depth and ripple fields to the same mesh.
+Per-hit region, width, direction and harmonic detail vary, while envelopes remain
+independent. Positional deformation is shared across depth layers; bounded radial
+scaling and an ordered angular map protect the overall silhouette. No new hit
+inserts another complete model or changes the chosen base.
+
+The original ten bases are available through English base buttons, Shift+key and
+4/5/6/7. Session restore includes the base selection. Camera drag/zoom, palettes,
+background, Space brake/release, loops, overdub, music import, score and touch input
+remain. Existing English localization is retained. Development evidence now checks
+local-field independence, layer order, dense overlays and base save/restore, in
+addition to the earlier synthetic multi-contact and desktop interaction checks.
+No new physical-touch verification or human-participant approval is claimed.
+
+This corrected version passed 60 Python unit tests, synthetic simultaneous-key and
+multi-finger routing, base-selection controls, import/loop/session checks and the
+ten-form sculpture smoke test. A default demo playback run measured about 59.8
+FPS with 8.2/19.9 ms mean/max event-dispatch lateness on the development computer.
+Those numbers are not a physical end-to-end latency or touch-hardware measurement.
+The updated clip and images show one main construction with local overlays, not
+the rejected pile of complete models. No post-change participant approval is claimed.

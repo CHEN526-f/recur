@@ -71,4 +71,17 @@ class InteractionTests(unittest.TestCase):
             with patch('app.CAPTURES',Path(folder)):restore_session(m,r)
         self.assertTrue(m.loop[3][2]);self.assertEqual(m.bpm,92);self.assertEqual(r.palette,1)
 
+    def test_restore_preserves_the_selected_main_construction(self):
+        import types
+        from recur.polyphony import PolyphonicStage
+        m=Instrument();r=types.SimpleNamespace(palette=0,stage=PolyphonicStage())
+        with tempfile.TemporaryDirectory() as folder:
+            Path(folder,'latest-session.json').write_text(json.dumps({'loop':[[False]*16 for _ in range(6)],'base':2}))
+            with patch('app.CAPTURES',Path(folder)):restore_session(m,r)
+        self.assertEqual(r.stage.base_family,2)
+        self.assertEqual(r.stage.weights[2],1.)
+        from recur.motion import MusicalMotion
+        r.stage.update(m,MusicalMotion(),0.)
+        self.assertEqual(r.stage.weights[2],1.)
+
 if __name__=='__main__':unittest.main()

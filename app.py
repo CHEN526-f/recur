@@ -28,6 +28,7 @@ def save_session(model,renderer):
     png=CAPTURES/f'recur-{stamp}.png'
     pygame.image.save(renderer.capture(),str(png))
     data={'version':3,'bpm':model.bpm,'loop':model.loop,'loop_b':model.loop_b,'target':model.target,'target_b':model.target_b,'palette':renderer.palette,'crossfade':model.crossfade_target,'fx':model.fx_target}
+    if hasattr(renderer,'stage'):data['base']=renderer.stage.base_family
     (CAPTURES/'latest-session.json').write_text(json.dumps(data,indent=2),encoding='utf-8')
     return png.name
 
@@ -48,9 +49,12 @@ def restore_session(model,renderer):
     if type(target_b) is not int or not 0<=target_b<FORM_COUNT:raise ValueError('Invalid deck B shape')
     if type(cross) not in (int,float) or not math.isfinite(cross) or not 0<=cross<=1:raise ValueError('Invalid fader')
     if not isinstance(fx,list) or len(fx)!=2 or any(type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=1 for v in fx):raise ValueError('Invalid FX')
+    base=data.get('base',6)
+    if type(base) is not int or not 0<=base<FORM_COUNT:raise ValueError('Invalid base construction')
     model.loop=[row.copy() for row in loop];model.loop_b=[row.copy() for row in loop_b];model.bpm=bpm
     model.select_shape(target,0);model.select_shape(target_b,1);renderer.palette=palette
     model.crossfade_target=float(cross);model.fx_target=list(fx)
+    if hasattr(renderer,'stage'):renderer.stage.set_base(base,duration=0.)
 
 
 def main():

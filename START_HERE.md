@@ -19,12 +19,17 @@ normal playback and analysis run locally without an API key.
 
 | Key | Visual voice | Sound |
 |---|---|---|
-| A | Expanding pulses | Kick |
-| S | Sweeping arcs | Pitched glass melody |
-| D | Opening fan | Chord |
-| J | Gliding ribbon | Warm pluck |
-| K | Depth outlines | Bass |
-| L | Spark constellation | Percussion |
+| A | Local aperture opening | Kick |
+| S | Travelling fold | Pitched glass melody |
+| D | Petal opening | Chord |
+| J | Fin/facet turning | Warm pluck |
+| K | Layer depth opening | Bass |
+| L | Travelling ripple | Percussion |
+
+The screen contains one ordered main construction. Every hit captures a different
+region, width and local variation. Openness, fold, petals, turning, depth and
+ripple fields add together with bounded amplitudes. Layer and angular order are
+preserved to keep the silhouette readable. Existing notes keep their own timing.
 
 Combine keys. A new voice does not replace an existing animation. Every note has
 its own smooth attack and release. Holding a key does not generate repeated hits.
@@ -44,10 +49,11 @@ recognition is claimed. Beat timing depends on the recording and output devices.
 - I / LOOP: open the 16-step editor. Adding a cell auditions and starts the loop.
 - R: overdub live notes. The editor displays its playhead, state and deck gain.
 - Tab: choose deck A/B. The crossfader controls their sound gains.
-- Z/X: lower/raise the live melody octave. FX controls tone and echo.
+- Z/X: lower/raise melody octave. FX controls tone, echo, torsion and spread.
 - E / SAVE: save an image and session in `captures/`. O / LOAD: restore it.
-- F2 / SCULPT: the preserved sculpture study, including the ten manual forms.
-- 4/5/6/7: enter sculpture mode and choose iris/corona/rosette/facet.
+- Base buttons or Shift + A/S/D/J/K/L: select the six original main constructions.
+- F2 / SCULPT: the preserved earlier interaction study.
+- 4/5/6/7: select iris/corona/rosette/facet as the main construction.
 - Backspace: reset controls while preserving your loop. Escape: exit.
 
 Application labels, guidance and notices are English. The project title retains

@@ -82,17 +82,17 @@ class Interface:
             self.pad_rects.append(r);on=(i in renderer.stage.contacts.voices or model.flashes[i]>.1) if renderer.play_mode else model.active_target==i
             pygame.draw.rect(surf,(30+int(model.flashes[i]*15),29,25,245),r,border_radius=4)
             pygame.draw.rect(surf,GOLD if on else (54,55,51),r,1,border_radius=4)
-            label=self.font(11).render(KEYS[i]+' '+('PULSE','ARCS','FAN','RIBBON','PORTAL','SPARKS')[i] if renderer.play_mode else KEYS[i],True,GOLD if on else INK)
+            label=self.font(11).render(KEYS[i]+' '+('OPEN','FOLD','PETALS','TURN','DEPTH','RIPPLE')[i] if renderer.play_mode else KEYS[i],True,GOLD if on else INK)
             surf.blit(label,label.get_rect(center=(r.centerx,r.y+10)))
             role=self.font(9).render(('KICK','MELODY','CHORD','PLUCK','BASS','PERC')[i],True,MUTED)
             surf.blit(role,role.get_rect(center=(r.centerx,r.y+25)))
         for i,name in enumerate(NAMES[6:] if not renderer.play_mode else ()):
             self.button(surf,f'form_{6+i}',f'{4+i} {name}',(w//2-174+i*88,base-32,82,23),model.active_target==6+i)
         if renderer.play_mode:
-            self.text(surf,'INDEPENDENT VOICES / COMBINE KEYS OR TOUCHES',w//2-166,base-26,11,MUTED)
-            if not renderer.stage.notes and not self.show_grid and not self.show_help:
-                self.text(surf,'PLAY  A  S  D  J  K  L',w//2-167,int(h*.40),24,INK)
-                self.text(surf,'Tap the canvas or pads. Each voice keeps its own tail.',w//2-201,int(h*.40)+38,12,MUTED)
+            for i,name in enumerate(('RING','RIBBON','BLOOM','CRYSTAL','ORBIT','TIDE','IRIS','CORONA','ROSETTE','FACET')):
+                self.button(surf,f'base_{i}',name,(w//2-355+i*72,base-32,66,23),renderer.stage.base_family==i)
+            pygame.draw.rect(surf,PANEL,(w//2-238,base-58,476,20),border_radius=4)
+            self.text(surf,'BASE BELOW / KEYS ADD LOCAL MOTION / SHIFT+KEY CHANGES BASE',w//2-225,base-54,11,MUTED)
         y=base+70;bx=w//2-177
         for i,(key,label,on) in enumerate([
             ('play','||' if model.playing else '>',model.playing),
@@ -168,8 +168,8 @@ class Interface:
             pygame.draw.rect(surf,PANEL,(x,y,700,550),border_radius=9)
             self.text(surf,'RECUR / controls',x+28,y+26,24,INK,True)
             lines=[
-                'A S D J K L   Independent visual voices + pitched/percussive sound.',
-                'F2 / 4 5 6 7  Sculpture mode / original extra sculpture forms.',
+                'A S D J K L   Independent local motions + pitched/percussive sound.',
+                'SHIFT + KEY   Select a base. 4-7: extra bases. F2: earlier study.',
                 'TAB           Select deck A or B. Each keeps its own form/loop.',
                 'TOUCH         Multiple fingers play independent voices together.',
                 'TURNTABLES    Drag around either disc to scratch forward/back.',

@@ -6,7 +6,8 @@ from .crescendo import Crescendo, CrescendoRenderer, smoothstep, ARCHITECTURE
 from .materials import SURFACE_FRAGMENT, beveled_box, polished_rib,panel_mesh
 from .motion import MusicalMotion
 from .morphology import Morphogenesis
-from .polyphony import PolyphonicStage,StageRenderer
+from .polyphony import PolyphonicStage
+from .spatial import SpatialStageRenderer
 
 
 VERTEX = r'''
@@ -118,7 +119,7 @@ class SculptureRenderer:
         self.panel_vao=self.ctx.vertex_array(self.program,[(self.panel_vbo,'3f 3f 1f 3f 3f','in_pos','in_normal','in_material','in_block','in_block_normal')],index_buffer=self.panel_ibo)
         self.climax=Crescendo()
         self.motion=MusicalMotion()
-        self.stage=PolyphonicStage();self.stage_renderer=StageRenderer(self.ctx)
+        self.stage=PolyphonicStage();self.stage_renderer=SpatialStageRenderer(self.ctx)
         self.play_mode=True
         self.motion.on_note=self.visual_note
         self.evolution=Morphogenesis()
@@ -182,6 +183,11 @@ class SculptureRenderer:
                                     performance.position/4. if performance and performance.playing else None)
         self.motion.update(model,dt)
         self.stage.update(model,self.motion,dt)
+        self.zoom=ease(self.zoom,self.zoom_target,6.,dt)
+        for i in (0,1):self.orbit[i]=ease(self.orbit[i],self.orbit_target[i],6.,dt)
+        self.climax.score_target=(music.expansion if track_playing else
+                                  performance.expansion if performance and performance.playing else None)
+        self.climax.update(model,dt)
         if self.play_mode:
             self.draw_stage(model,ui_bytes)
             return
@@ -189,15 +195,10 @@ class SculptureRenderer:
         selected=bool(performance.auto if score_playing else music and music.auto and (music.path or model.playing))
         self.evolution.update(model,self.motion,dt,selected=selected,
                               running=bool(track_playing or score_playing or model.playing))
-        self.climax.score_target=(music.expansion if track_playing else
-                                  performance.expansion if performance and performance.playing else None)
-        self.climax.update(model,dt)
         if self.evolution.strength>.00001:
             pose=self.evolution.vj.build(self.evolution,self.motion,self.climax.amount)
             self.pose_texture.write(pose.tobytes())
         self.pose_texture.use(5)
-        self.zoom=ease(self.zoom,self.zoom_target,6.,dt)
-        for i in (0,1):self.orbit[i]=ease(self.orbit[i],self.orbit_target[i],6.,dt)
         # The stage itself opens continuously to the display edges during a climax.
         opening=smoothstep(self.climax.amount)
         stage_h=round(h-245*(1-opening)) if self.instrument_visible else h
@@ -252,7 +253,10 @@ class SculptureRenderer:
         height=h-265 if self.instrument_visible else h
         bottom=205 if self.instrument_visible else 0
         self.ctx.viewport=(0,bottom,w,height)
-        self.stage_renderer.prepare(self.stage,w/height,(float(w),float(h)))
+        f=1/math.tan(math.radians(39)/2);near,far=.1,100.
+        proj=np.array([[f/(w/height),0,0,0],[0,f,0,0],[0,0,(far+near)/(near-far),2*far*near/(near-far)],[0,0,-1,0]],dtype='f4')
+        view=np.eye(4,dtype='f4');view[2,3]=-self.zoom
+        self.stage_renderer.prepare(self.stage,proj,view,(float(w),float(h)),self.orbit,model.fx,self.palette,self.zoom,self.climax.amount)
         self.stage_renderer.draw_pass(0)
         self.ctx.copy_framebuffer(self.opaque_fbo,self.msaa_fbo)
         self.opaque_color.use(3)

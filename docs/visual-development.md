@@ -1,6 +1,23 @@
 # Visual refinement — iteration log
 
-## Current: polyphonic performance — 31 October 2026
+## Current: one coherent 3D construction — 31 October 2026
+
+The author clarified that the flat version's interaction feel was correct but its
+visual language was wrong. A subsequent test of multiple complete models was
+also rejected as an unreadable intersecting pile. They explicitly chose one main
+construction whose different regions respond independently.
+
+The current view restores the original layered 3D fins/facets, metal reflections,
+small glass accents and depth testing. Independent notes now create local fields
+for opening, folding, petals, turning, depth and ripple. Birth position, width,
+direction and harmonic detail vary per hit. Fields share the same ordered mesh;
+radial scale stays positive and the angular map stays ordered. Notes cannot switch
+the whole base or insert another complete model. Base buttons and Shift+key select
+the original ten constructions. All English UI and prior performance controls remain.
+
+The following sections document rejected and superseded approaches.
+
+## Earlier: polyphonic performance — 31 October 2026
 
 The author rejected continuing whole-object twitching and requested distinct key
 voices, smooth overlap and simultaneous touch, while retaining black/gold metal

@@ -5,21 +5,23 @@ import re
 from recur.polyphony import PolyphonicStage,InputContacts,LIFETIMES
 from recur.model import Instrument
 from recur.motion import MusicalMotion
+from recur.spatial import note_field,deformation
 
 
 class PolyphonicTests(unittest.TestCase):
     def test_second_key_does_not_retarget_or_remove_first_animation(self):
         stage=PolyphonicStage();first=stage.note(0);stage.time=.3
-        before=stage.geometry().copy();snapshot=vars(first).copy()
+        theta=np.linspace(0,6.28,216)
+        before=note_field(first,stage.time,theta);snapshot=vars(first).copy()
         stage.note(1)
         self.assertIn(first,stage.notes)
         self.assertEqual(snapshot,vars(first))
-        np.testing.assert_array_equal(stage.geometry()[:len(before)],before)
+        np.testing.assert_array_equal(note_field(first,stage.time,theta),before)
 
     def test_spectrum_changes_cannot_make_a_live_note_twitch(self):
         stage=PolyphonicStage();stage.note(3);stage.time=.4
-        before=stage.geometry().copy();stage.levels=[1.,0.,1.]
-        np.testing.assert_array_equal(stage.geometry(),before)
+        before=deformation(stage).copy();stage.levels=[1.,0.,1.]
+        np.testing.assert_array_equal(deformation(stage),before)
 
     def test_three_fingers_and_keyboard_have_independent_contacts(self):
         contacts=InputContacts();calls=[]
@@ -33,12 +35,37 @@ class PolyphonicTests(unittest.TestCase):
         shapes=[]
         for voice in range(6):
             stage=PolyphonicStage();note=stage.note(voice);stage.time=.3
-            data=stage.geometry();self.assertTrue(len(data)>0 and np.isfinite(data).all())
-            shapes.append(len(data))
+            data=note_field(note,stage.time,np.linspace(0,6.28,216))
+            self.assertTrue(np.isfinite(data).all())
+            shapes.append(data.tobytes())
             self.assertEqual(note.envelope(note.born),0.)
             self.assertEqual(note.envelope(note.born+note.duration),0.)
             self.assertLess(note.envelope(note.born+note.duration-.01),.002)
         self.assertGreaterEqual(len(set(shapes)),5)
+
+    def test_repeated_key_varies_captured_placement_and_construction(self):
+        stage=PolyphonicStage();notes=[stage.note(0) for _ in range(5)]
+        self.assertEqual(len({n.center for n in notes}),5)
+        self.assertEqual(len({n.variant for n in notes}),5)
+        for n in notes:
+            self.assertLess(abs(n.center[0]),1.5)
+            self.assertLess(abs(n.center[1]),.8)
+
+    def test_overlay_stays_bounded_and_preserves_shared_layer_order(self):
+        stage=PolyphonicStage()
+        for _ in range(8):
+            for voice in range(6):stage.note(voice)
+        stage.time=.3
+        field=deformation(stage).reshape(9,2,216,4)
+        self.assertTrue(np.isfinite(field).all())
+        for band in range(1,9):np.testing.assert_array_equal(field[band],field[0])
+        self.assertLessEqual(float(abs(field[:,0,:,0]).max()),.201)
+        self.assertLessEqual(float(abs(field[:,0,:,1]).max()),.121)
+        self.assertLessEqual(float(abs(field[:,0,:,3]).max()),.821)
+        self.assertGreater(float((1+field[:,1,:,0]).min()),.4)
+        angular=field[0,0,:,1].astype(float)
+        steps=2*np.pi/216+np.roll(angular,-1)-angular
+        self.assertGreater(float(steps.min()),0.)
 
     def test_pause_freezes_tails_and_expiry_removes_only_finished_notes(self):
         stage=PolyphonicStage();model=Instrument();motion=MusicalMotion()

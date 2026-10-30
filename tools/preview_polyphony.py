@@ -30,8 +30,12 @@ for voice,name in enumerate(NAMES):
  x=voice%3*400;y=voice//3*310;sheet.paste(im,(x,y+28));draw.text((x+12,y+8),'ASDJKL'[voice]+' / '+name,fill='#d2ad68')
  pygame.display.flip()
 sheet.save(out/'voices.jpg')
-renderer.stage.reset()
+renderer.stage.reset();renderer.stage_renderer.idle=0.
 for voice in range(6):renderer.stage.note(voice,.8)
 renderer.stage.time+=.4;renderer.draw(model,bytes(size[0]*size[1]*4))
 pygame.image.save(renderer.capture(),str(out/'ensemble.png'))
-pygame.quit();print('POLYPHONIC PREVIEW OK: six isolated voices + ensemble')
+renderer.stage.reset();renderer.stage_renderer.idle=0.
+for _ in range(4):renderer.stage.note(0,.85)
+renderer.stage.time+=.5;renderer.draw(model,bytes(size[0]*size[1]*4))
+pygame.image.save(renderer.capture(),str(out/'repeat-rings.png'))
+pygame.quit();print('SPATIAL PREVIEW OK: one original 3D base; six isolated local motions, overlap and repeated-key variation')

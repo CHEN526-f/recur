@@ -93,6 +93,10 @@ def run(save,restore):
 
     def select_extra(index):
         if model.paused:return
+        if renderer.play_mode:
+            renderer.stage.set_base(index)
+            hit(VOICE_FOR_FORM[index],'FORM')
+            return
         renderer.play_mode=False
         if music.path:music.set_auto(False)
         if demo:performance.set_auto(False)
@@ -122,6 +126,7 @@ def run(save,restore):
             if demo:performance.set_auto(not performance.auto)
             else:music.set_auto(not music.auto)
         elif name.startswith('form_'):select_extra(int(name.split('_')[1]))
+        elif name.startswith('base_'):renderer.stage.set_base(int(name.split('_')[1]))
         elif name in ('play','grid_play'):
             desired=not model.playing
             if demo:action('score')
@@ -222,7 +227,8 @@ def run(save,restore):
                         if k==pygame.K_RETURN:ui.show_help=False
                     elif k in (pygame.K_a,pygame.K_s,pygame.K_d,pygame.K_j,pygame.K_k,pygame.K_l):
                         voice=(pygame.K_a,pygame.K_s,pygame.K_d,pygame.K_j,pygame.K_k,pygame.K_l).index(k)
-                        renderer.stage.contacts.down(('key',k),voice,hit)
+                        if renderer.play_mode and getattr(event,'mod',0)&pygame.KMOD_SHIFT:renderer.stage.set_base(voice)
+                        else:renderer.stage.contacts.down(('key',k),voice,hit)
                     elif k==pygame.K_F2:action('visual_mode')
                     elif k==pygame.K_TAB:model.selected_deck=1-model.selected_deck
                     elif k==pygame.K_SPACE and not model.paused:model.holding=True
@@ -257,6 +263,7 @@ def run(save,restore):
                 elif event.type==pygame.KEYUP and event.key==pygame.K_SPACE:
                     if model.holding and not model.paused:
                         amount=model.release();synth.drop(amount);renderer.climax.drop(amount,model.weights)
+                        if renderer.play_mode and amount>.1:renderer.motion.note(2,amount*.8,source='RELEASE')
                 elif event.type==pygame.KEYUP:
                     renderer.stage.contacts.up(('key',event.key))
                 elif event.type==pygame.FINGERDOWN and not ui.show_help:
@@ -309,7 +316,7 @@ def run(save,restore):
                         if not used:
                             if renderer.play_mode:
                                 voice=renderer.stage.contacts.zone(pos[0]/size[0],pos[1]/size[1])
-                                hit(voice,'TOUCH')
+                                hit(voice,'TOUCH');drag='orbit'
                             else:drag='orbit'
                 elif event.type==pygame.MOUSEBUTTONUP:drag=None;model.jog[:]=[None,None]
                 elif event.type==pygame.MOUSEMOTION and drag is not None:
@@ -379,7 +386,9 @@ def run(save,restore):
                 if frames==18:
                     assert not demo and model.loop[1][8],'Song completion lost the loop'
                     model.selected_deck=1;hit(4)
-                if frames==20:select_extra(9);model.crossfade_target=.7;model.fx_target[:]=[.8,.7];model.jog[1]=-2.
+                if frames==20:
+                    if renderer.play_mode:action('visual_mode')
+                    select_extra(9);model.crossfade_target=.7;model.fx_target[:]=[.8,.7];model.jog[1]=-2.
                 if frames==35:assert model.deck_speeds[1]<0. and model.target_b==9;model.jog[1]=None
                 if frames==36:
                     action('export');model.select_shape(1,1);action('load');assert model.target_b==9
@@ -459,9 +468,13 @@ def run(save,restore):
                 if frames==45:
                     Path('captures/qa').mkdir(parents=True,exist_ok=True)
                     pygame.image.save(renderer.capture(),'captures/qa/polyphonic-interface.png')
+                if frames==80:action('base_1')
+                if frames==100:assert renderer.stage.base_family==1
+                if frames==115:action('base_6')
                 if frames==210:
                     assert not renderer.stage.notes,'Completed notes did not expire'
                     assert model.target==0,'Keyboard voices retargeted the global sculpture'
+                    assert renderer.stage.weights[6]>.99,'Base controls did not finish their transition'
                     running=False
             renderer.instrument_visible=not ui.hide
             data=ui.render(size,model,synth,renderer,camera,clock.get_fps(),toast if time.monotonic()<toast_until else '',demo)

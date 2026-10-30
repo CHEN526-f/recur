@@ -3,15 +3,16 @@
 **Public repository:** https://github.com/CHEN526-f/recur
 **Author:** CHEN Hongfan · **Course:** SD5913 · **Assignment:** 3
 
-RECUR is a playable audiovisual instrument. Six keys trigger six independent
-visual voices and harmonic/percussive sounds. You can combine keys or touchscreen
+RECUR is a playable audiovisual instrument. Six keys trigger independent local animations on one complete 3D construction,
+with harmonic/percussive sounds. You can combine keys or touchscreen
 contacts, build a loop, or import music. Every visual note has its own lifetime:
-a new note adds to the composition instead of retargeting the whole scene.
+a new note adds a local motion field instead of replacing the whole scene.
 
 The intended user is someone exploring rhythm, gesture and visual composition.
-The current direction keeps a black-and-gold material palette with polished
-ribbon lighting and sparse refractive accents. The earlier 3D sculpture studies
-remain available through F2, rather than driving the default interaction.
+The original layered metal construction is the default view again, with actual
+3D curved fins, beveled facets, depth testing, studio reflections and sparse
+refractive glass. Animations remain independent in time but share this ordered
+structure. Complete models are not randomly piled on top of each other.
 
 ![Actual Python interface](docs/python-preview.png)
 
@@ -36,14 +37,19 @@ playing keys. The title contains “polyphonic instrument”.
 
 | Key | Visual voice | Sound |
 |---|---|---|
-| A | Expanding pulse rings | Kick |
-| S | Sweeping, layered arcs | Glass melody |
-| D | Unfolding fan | Chord |
-| J | Gliding ribbon | Warm pluck |
-| K | Nested depth outlines | Bass |
-| L | Spark constellation | Percussion |
+| A | Local aperture opening | Kick |
+| S | Travelling fold | Glass melody |
+| D | Petal opening | Chord |
+| J | Fin/facet turning | Warm pluck |
+| K | Layer depth opening | Bass |
+| L | Travelling ripple | Percussion |
 
-![Six independent visual voices](docs/polyphonic-voices.jpg)
+![Independent local motions on the same 3D base](docs/polyphonic-voices.jpg)
+
+The screen contains one ordered main construction. Every hit captures a different
+region, width and local variation. Openness, fold, petals, turning, depth and
+ripple fields add together with bounded amplitudes. Layer and angular order are
+preserved to keep the silhouette readable. Existing notes keep their own timing.
 
 Try A + S, then add D or J while the first notes finish. Each accepted hit keeps
 its own smooth attack and release. Holding a key does not repeatedly retrigger it.
@@ -67,13 +73,14 @@ multi-touch device has not been verified.
 | R / REC | Overdub live notes into the selected deck's loop |
 | Tab / crossfader | Choose deck A/B / mix their sound gains |
 | Z / X | Lower/raise the live melody octave |
-| FX pad | Tone and echo for newly played sound |
+| FX pad | Tone, echo, local torsion and spatial spread |
 | P / M | Pause all animation / mute audio |
 | H / F | Artwork-only view / fullscreen |
 | E / SAVE | Save an image and session in `captures/` |
 | O / LOAD | Restore the saved loops, tempo and material controls |
-| F2 / SCULPT | Switch to the preserved sculpture study |
-| 4 / 5 / 6 / 7 | Enter sculpture mode and choose iris/corona/rosette/facet |
+| Shift + A/S/D/J/K/L / base buttons | Choose ring, ribbon, bloom, crystal, orbit or tide as the main construction |
+| F2 / SCULPT | Switch to the earlier single-sculpture interaction study |
+| 4 / 5 / 6 / 7 | Choose iris/corona/rosette/facet as the main construction |
 | Backspace / Escape | Reset controls while retaining loops / exit |
 
 The loop editor names its voices and steps, displays a playhead, playback state,
@@ -110,18 +117,18 @@ build, peak, breakdown and outro. Harmony moves through Dm9, Bbmaj9, Fmaj9 and
 Cadd9. Stopping LOCAL restores previous loops and resumes the earlier track if
 it was playing. Live notes follow the same harmonic palette.
 
-## Preserved sculpture mode
+## Main construction and preserved controls
 
-F2 opens the earlier OpenGL sculpture study. A/S/D/J/K/L retain serpent, ribbon,
-bloom, crystal, orbit and tide; 4/5/6/7 retain iris, corona, rosette and facet.
-The crossfader and original sculpture controls remain available. These studies
-are not the default polyphonic stage. Their earlier whole-object morph experiments
-and limitations are documented in PROCESS.md and docs/visual-development.md.
+The base buttons or Shift + A/S/D/J/K/L select the six original constructions.
+4/5/6/7 retain iris, corona, rosette and facet. Normal performance keys add local
+motion without choosing a new base. Base selection is saved with the session.
+F2 retains the earlier interaction study. Camera orbit, zoom, palettes, background,
+Space brake/release, crossfading, overdub, loops and music import remain available.
 
 ## Implementation and limits
 
-- `recur/polyphony.py`: immutable visual notes, contact ownership, six geometric
-  voices, rounded-section metal shading and sparse screen-space glass.
+- `recur/polyphony.py`: independent motion notes, contact ownership and base selection.
+- `recur/spatial.py`: the shared original 3D construction and bounded local motion fields.
 - `recur/player.py`: keyboard, mouse, finger, loop and music routing.
 - `recur/audio.py` / `composition.py`: local stereo synthesis, pitched live notes
   and the original score.
@@ -130,7 +137,7 @@ and limitations are documented in PROCESS.md and docs/visual-development.md.
 - `recur/ui.py`: English controls and guide, composited over the stage.
 - `recur/vj.py`, `structures.py`, `organism.py`: preserved sculpture experiments.
 
-Stage materials are a 2.5D normal/reflection treatment, not full ray-traced solids.
+Stage geometry is three-dimensional and uses the original metal/glass renderer.
 Glass refracts the resolved opaque image; it cannot trace multiple layers or
 objects outside the framebuffer. Simultaneous voice density is bounded. The
 optional camera remains a local input study, not hand or gesture recognition.
@@ -151,7 +158,7 @@ uv run python app.py --interaction-test --mute
 uv run python app.py --rhythm-test --mute
 ```
 
-The current checks include 57 Python unit tests. They cover independent tails,
+The current checks include 60 Python unit tests. They cover independent tails,
 distinct voices, paused time, input ownership,
 held-key suppression, synthetic multi-finger routing, loops and error handling.
 They are development evidence and do not replace a human usability trial.
