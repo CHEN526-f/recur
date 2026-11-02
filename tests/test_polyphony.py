@@ -9,6 +9,38 @@ from recur.spatial import note_field,deformation
 
 
 class PolyphonicTests(unittest.TestCase):
+    def test_normal_keys_select_six_original_shapes_without_shift(self):
+        stage=PolyphonicStage();model=Instrument();motion=MusicalMotion()
+        for voice in range(6):
+            stage.note(voice)
+            self.assertEqual(stage.base_family,voice)
+            for _ in range(50):stage.update(model,motion,1/60)
+            self.assertGreater(stage.weights[voice],.999)
+            self.assertAlmostEqual(float(stage.weights.sum()),1.)
+
+    def test_repeated_key_does_not_restart_the_shape_transition(self):
+        stage=PolyphonicStage();model=Instrument();motion=MusicalMotion()
+        stage.note(1)
+        for _ in range(20):stage.update(model,motion,1/60)
+        age=stage.base_age;weights=stage.weights.copy()
+        stage.note(1)
+        self.assertEqual(stage.base_age,age)
+        np.testing.assert_array_equal(stage.weights,weights)
+        for _ in range(30):stage.update(model,motion,1/60)
+        self.assertGreater(stage.weights[1],.999)
+
+    def test_music_uses_attacks_and_respects_manual_selection(self):
+        stage=PolyphonicStage();stage.note(2)
+        stage.time=1.;stage.levels=[.8,.7,.7]
+        stage.note(0,source='TRACK');self.assertEqual(stage.base_family,2)
+        stage.time=3.;stage.note(0,source='TRACK')
+        self.assertEqual(stage.base_family,7)
+        stage.time=6.;stage.note(3,source='TRACK',follow=False)
+        self.assertEqual(stage.base_family,7)
+        model=Instrument();motion=MusicalMotion()
+        for _ in range(200):stage.update(model,motion,1/60)
+        self.assertEqual(stage.base_family,7,'No timer should select another shape')
+
     def test_second_key_does_not_retarget_or_remove_first_animation(self):
         stage=PolyphonicStage();first=stage.note(0);stage.time=.3
         theta=np.linspace(0,6.28,216)

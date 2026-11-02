@@ -3,16 +3,16 @@
 **Public repository:** https://github.com/CHEN526-f/recur
 **Author:** CHEN Hongfan · **Course:** SD5913 · **Assignment:** 3
 
-RECUR is a playable audiovisual instrument. Six keys trigger independent local animations on one complete 3D construction,
-with harmonic/percussive sounds. You can combine keys or touchscreen
-contacts, build a loop, or import music. Every visual note has its own lifetime:
-a new note adds a local motion field instead of replacing the whole scene.
+RECUR is a playable audiovisual instrument. Six keys select six distinct original
+3D constructions with harmonic/percussive sounds. Four extra keys restore the
+radial constructions. You can combine keys or touchscreen contacts, build a loop,
+or import music. Shapes reassemble smoothly; note accents keep their own tails.
 
 The intended user is someone exploring rhythm, gesture and visual composition.
 The original layered metal construction is the default view again, with actual
 3D curved fins, beveled facets, depth testing, studio reflections and sparse
-refractive glass. Animations remain independent in time but share this ordered
-structure. Complete models are not randomly piled on top of each other.
+refractive glass. The main silhouette changes with the played key instead of
+remaining fixed on an iris. Existing performance features remain available.
 
 ![Actual Python interface](docs/python-preview.png)
 
@@ -37,19 +37,21 @@ playing keys. The title contains “polyphonic instrument”.
 
 | Key | Visual voice | Sound |
 |---|---|---|
-| A | Local aperture opening | Kick |
-| S | Travelling fold | Glass melody |
-| D | Petal opening | Chord |
-| J | Fin/facet turning | Warm pluck |
-| K | Layer depth opening | Bass |
-| L | Travelling ripple | Percussion |
+| A | Serpent / closed ring | Kick |
+| S | Ribbon | Glass melody |
+| D | Bloom | Chord |
+| J | Crystal | Warm pluck |
+| K | Orbit | Bass |
+| L | Tide | Percussion |
 
-![Independent local motions on the same 3D base](docs/polyphonic-voices.jpg)
+![Ten restored 3D constructions](docs/polyphonic-voices.jpg)
 
-The screen contains one ordered main construction. Every hit captures a different
-region, width and local variation. Openness, fold, petals, turning, depth and
-ripple fields add together with bounded amplitudes. Layer and angular order are
-preserved to keep the silhouette readable. Existing notes keep their own timing.
+Normal keys select their complete constructions directly, without Shift. A new
+key reassembles the main silhouette from its current pose in about 0.72 seconds.
+The most recently played key determines the destination; notes from earlier keys
+continue their own accent envelopes. Repeating a key does not restart an unfinished
+transition. The six original forms retain their three-layer construction; radial
+extras use six layers. Transient-driven articulation restores visible beat motion.
 
 Try A + S, then add D or J while the first notes finish. Each accepted hit keeps
 its own smooth attack and release. Holding a key does not repeatedly retrigger it.
@@ -78,7 +80,7 @@ multi-touch device has not been verified.
 | H / F | Artwork-only view / fullscreen |
 | E / SAVE | Save an image and session in `captures/` |
 | O / LOAD | Restore the saved loops, tempo and material controls |
-| Shift + A/S/D/J/K/L / base buttons | Choose ring, ribbon, bloom, crystal, orbit or tide as the main construction |
+| A/S/D/J/K/L / shape buttons | Choose serpent, ribbon, bloom, crystal, orbit or tide |
 | F2 / SCULPT | Switch to the earlier single-sculpture interaction study |
 | 4 / 5 / 6 / 7 | Choose iris/corona/rosette/facet as the main construction |
 | Backspace / Escape | Reset controls while retaining loops / exit |
@@ -105,9 +107,10 @@ attacks schedule the same visual voices used by the keys. Band balance and
 strength distribute midrange notes, bass outlines and accents; this is visual
 orchestration, not recognized notes, chords, emotion or musical genre.
 
-Motion comes from each note's captured parameters and elapsed time. Frame-to-frame
-volume changes do not repeatedly warp live geometry. Percussive attacks are rate
-limited to bound density; there is no timed playlist of whole-scene morph targets.
+Measured attacks drive articulation and can select a new complete construction.
+Automatic shape changes are spaced at least 1.6 seconds apart so reassembly can
+finish; there is no timer that advances shapes without a note. Manual selection
+takes priority for 2.2 seconds. Percussive accents continue during this interval.
 Live keys can add notes while the recording continues. Beat detection is strongest
 with clear percussion; device latency and ambiguous rhythm remain limitations.
 
@@ -119,9 +122,9 @@ it was playing. Live notes follow the same harmonic palette.
 
 ## Main construction and preserved controls
 
-The base buttons or Shift + A/S/D/J/K/L select the six original constructions.
-4/5/6/7 retain iris, corona, rosette and facet. Normal performance keys add local
-motion without choosing a new base. Base selection is saved with the session.
+Normal A/S/D/J/K/L keys and shape buttons select the six original constructions.
+4/5/6/7 retain iris, corona, rosette and facet. Shift+key also permits silent shape
+selection. Shape selection is saved with the session.
 F2 retains the earlier interaction study. Camera orbit, zoom, palettes, background,
 Space brake/release, crossfading, overdub, loops and music import remain available.
 

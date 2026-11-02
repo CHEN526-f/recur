@@ -49,7 +49,7 @@ def restore_session(model,renderer):
     if type(target_b) is not int or not 0<=target_b<FORM_COUNT:raise ValueError('Invalid deck B shape')
     if type(cross) not in (int,float) or not math.isfinite(cross) or not 0<=cross<=1:raise ValueError('Invalid fader')
     if not isinstance(fx,list) or len(fx)!=2 or any(type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=1 for v in fx):raise ValueError('Invalid FX')
-    base=data.get('base',6)
+    base=data.get('base',target)
     if type(base) is not int or not 0<=base<FORM_COUNT:raise ValueError('Invalid base construction')
     model.loop=[row.copy() for row in loop];model.loop_b=[row.copy() for row in loop_b];model.bpm=bpm
     model.select_shape(target,0);model.select_shape(target_b,1);renderer.palette=palette

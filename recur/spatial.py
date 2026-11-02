@@ -86,6 +86,9 @@ void main(){
  center.xy=(rz(field.y)*vec3(center.xy*(1.+field.x),0.)).xy;
  center.z=center.z*(1.+depth)+field.z;
  local=rz(field.y)*local*ry(field.w+(fx.x-.5)*.35);
+ // The original six constructions have three layers; radial extras have six.
+ // Additional layers grow with the morph instead of popping into view.
+ if(band>=3.)local*=weights[6]+weights[7]+weights[8]+weights[9];
  float tile=weights[3]+weights[9];
  vec3 pos=mix(in_pos,in_tile,tile);
  vec3 norm=normalize(mix(in_normal,in_tile_normal,tile));
@@ -120,13 +123,14 @@ class SpatialStageRenderer:
         self.texture.write(deformation(stage).tobytes());self.texture.use(5)
         self.program['projection'].write(projection.T.tobytes());self.program['view'].write(view.T.tobytes())
         self.program['weights'].write(stage.weights.astype('f4').tobytes())
-        self.program['phase']=stage.time*.12
+        self.program['phase']=stage.time
+        self.instances=216*(6 if sum(stage.weights[6:])>.00001 else 3)
         tile=stage.weights[3]+stage.weights[9]
         self.mesh=1 if tile>.99999 else 0 if tile<.00001 else 2
         for name,value in (('resolution',resolution),('orbit',tuple(orbit)),('fx',tuple(fx)),
                            ('palette',palette),('camera_position',(0.,0.,zoom)),('opaque_scene',3),
                            ('energy',.1),('evolution_strength',0.),('deformation_map',5),('expansion',expansion),
-                           ('motion',(0.,0.,0.,0.)),('motion_phase',(0.,0.))):
+                           ('motion',stage.motion),('motion_phase',stage.phases)):
             if name in self.program:self.program[name].value=value
 
     def draw_pass(self,surface_pass):
@@ -134,5 +138,5 @@ class SpatialStageRenderer:
         self.ctx.enable(moderngl.DEPTH_TEST)
         self.ctx.disable(moderngl.BLEND)
         self.ctx.depth_mask=True
-        self.vaos[self.mesh].render(instances=216*6)
+        self.vaos[self.mesh].render(instances=self.instances)
         self.ctx.disable(moderngl.DEPTH_TEST)

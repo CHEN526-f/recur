@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--music',default=str(DEMO_PATH))
     parser.add_argument('--output',default='captures/rhythm-demo.mp4')
     parser.add_argument('--seconds',type=float,default=20.)
-    args=parser.parse_args();fps=30;size=(1100,704)
+    args=parser.parse_args();fps=30;size=(960,614)
     pygame.mixer.init(44100,-16,2,512);pygame.display.init()
     pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION,3)
     pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION,3)
@@ -38,7 +38,8 @@ def main():
     seconds=min(args.seconds,music.duration);pcm=pcm[:round(seconds*44100)]
     container=av.open(str(output),'w',options={'movflags':'+faststart'})
     video=container.add_stream('libx264',rate=fps);video.width,video.height=size
-    video.pix_fmt='yuv420p';video.options={'crf':'19','preset':'fast'}
+    video.pix_fmt='yuv420p';video.bit_rate=2400000
+    video.options={'preset':'fast','maxrate':'3000k','bufsize':'6000k'}
     audio=container.add_stream('aac',rate=44100);audio.layout='stereo';audio.bit_rate=192000
     checkpoints=tuple(np.linspace(min(1.,seconds*.15),max(.1,seconds-1.),12))
     sheet=Image.new('RGB',(1440,240*((len(checkpoints)+3)//4)),'#090b0c');draw=ImageDraw.Draw(sheet)
@@ -52,7 +53,7 @@ def main():
                 renderer.motion.note(event.voice,(.45+.55*event.strength)*np.exp(-(time-event.time)*9.),source='TRACK');attacks+=1
             for i in range(3):model.band_targets[i]=max(model.band_targets[i],measured[i])
             model.energy_target=max(model.energy_target,sum(measured)/3)
-            model.advance(1/fps);renderer.draw(model,overlay);forms.add(model.target)
+            model.advance(1/fps);renderer.draw(model,overlay);forms.add(renderer.stage.base_family)
             pixels=np.frombuffer(renderer.ctx.screen.read(components=3,alignment=1),dtype=np.uint8)
             pixels=pixels.reshape(size[1],size[0],3)[::-1].copy()
             frame=av.VideoFrame.from_ndarray(pixels,format='rgb24');frame.pts=index
@@ -72,7 +73,7 @@ def main():
         for packet in audio.encode():container.mux(packet)
     finally:container.close();music.close();pygame.quit()
     sheet.save(output.with_suffix('.jpg'))
-    print(f'TRACK PREVIEW OK: {seconds:.1f}s; {len(forms)} fixed base; continuous geometry; {attacks} measured attacks; {output}')
+    print(f'TRACK PREVIEW OK: {seconds:.1f}s; {len(forms)} audio-triggered shapes; {attacks} measured attacks; {output}')
 
 
 if __name__=='__main__':main()

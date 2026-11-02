@@ -15,23 +15,23 @@ uv run python app.py
 Click the artwork window before playing. The first setup downloads dependencies;
 normal playback and analysis run locally without an API key.
 
-## Play independent visual voices
+## Play the ten original shapes
 
 | Key | Visual voice | Sound |
 |---|---|---|
-| A | Local aperture opening | Kick |
-| S | Travelling fold | Pitched glass melody |
-| D | Petal opening | Chord |
-| J | Fin/facet turning | Warm pluck |
-| K | Layer depth opening | Bass |
-| L | Travelling ripple | Percussion |
+| A | Serpent / closed ring | Kick |
+| S | Ribbon | Pitched glass melody |
+| D | Bloom | Chord |
+| J | Crystal | Warm pluck |
+| K | Orbit | Bass |
+| L | Tide | Percussion |
 
-The screen contains one ordered main construction. Every hit captures a different
-region, width and local variation. Openness, fold, petals, turning, depth and
-ripple fields add together with bounded amplitudes. Layer and angular order are
-preserved to keep the silhouette readable. Existing notes keep their own timing.
+Each normal key selects a different complete 3D construction, without Shift.
+The most recently played key determines the next silhouette. Reassembly takes
+about 0.72 seconds and starts from the current pose. Repeating a key does not
+restart the transition. Earlier notes retain their accent tails.
 
-Combine keys. A new voice does not replace an existing animation. Every note has
+Combine keys. A new shape does not cut off earlier accent tails. Every note has
 its own smooth attack and release. Holding a key does not generate repeated hits.
 Tap the canvas or pads to play; compatible touchscreens can send multiple finger
 contacts. Ordinary laptop trackpads may expose only one mouse cursor to SDL.
@@ -51,7 +51,8 @@ recognition is claimed. Beat timing depends on the recording and output devices.
 - Tab: choose deck A/B. The crossfader controls their sound gains.
 - Z/X: lower/raise melody octave. FX controls tone, echo, torsion and spread.
 - E / SAVE: save an image and session in `captures/`. O / LOAD: restore it.
-- Base buttons or Shift + A/S/D/J/K/L: select the six original main constructions.
+- A/S/D/J/K/L or shape buttons: select the six original main constructions.
+- Shift + key: select a shape without triggering sound.
 - F2 / SCULPT: the preserved earlier interaction study.
 - 4/5/6/7: select iris/corona/rosette/facet as the main construction.
 - Backspace: reset controls while preserving your loop. Escape: exit.

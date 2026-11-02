@@ -243,7 +243,9 @@ class SculptureRenderer:
         if not self.play_mode:return None
         music=getattr(self,'music',None)
         if source=='TRACK' and music and not music.auto:return None
-        return self.stage.note(voice,amount,source)
+        performance=getattr(self,'performance',None)
+        follow=not (source=='DEMO' and performance and not performance.auto)
+        return self.stage.note(voice,amount,source,follow=follow)
 
     def draw_stage(self,model,ui_bytes):
         w,h=self.size

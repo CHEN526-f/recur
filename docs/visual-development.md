@@ -1,6 +1,19 @@
 # Visual refinement — iteration log
 
-## Current: one coherent 3D construction — 31 October 2026
+## Current: restore the ten keyed shapes — 2 November 2026
+
+The author rejected the fixed-base interaction below because the movement was too
+subtle and the ordinary keys appeared to keep the same construction. Normal
+A/S/D/J/K/L again choose serpent, ribbon, bloom, crystal, orbit and tide. 4/5/6/7
+retain iris, corona, rosette and facet. Original geometry and surface materials
+are reused; this is a rollback of the interaction direction, not a new style.
+
+Shape changes reassemble from the current pose, while earlier accent envelopes
+finish. Repeated hits do not stall the transition. Measured attacks can select
+shapes during imported music, with manual priority and minimum spacing. The
+updated ten-form sheet and keyboard captures come from the real OpenGL renderer.
+
+## Earlier: one coherent 3D construction — 31 October 2026
 
 The author clarified that the flat version's interaction feel was correct but its
 visual language was wrong. A subsequent test of multiple complete models was

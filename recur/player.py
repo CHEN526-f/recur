@@ -432,12 +432,12 @@ def run(save,restore):
                     assert model.loop_b[0][4] and model.crossfade>.8,'Muted deck did not become audible'
                     running=False
             if args.rhythm_test:
-                rhythm_forms.add(model.target)
+                rhythm_forms.add(renderer.stage.base_family)
                 rhythm_controls.append(renderer.stage.time)
                 rhythm_joints.append(sum(renderer.stage.counts))
                 if time.monotonic()-rhythm_started>=12.:
                     assert len(sync_errors)>15 and kick_frames>5,'Drum motion missing'
-                    assert len(rhythm_forms)==1,'Automatic playback cycled manual presets'
+                    assert len(rhythm_forms)>=2,'Music stayed on a single construction'
                     assert max(rhythm_controls)-min(rhythm_controls)>3.,'Visual time did not advance'
                     assert max(rhythm_joints)>=15,'Measured attacks did not trigger independent voices'
                     assert sum(n>0 for n in renderer.stage.counts)>=3,'Visual orchestration stayed in one voice'
@@ -451,6 +451,7 @@ def run(save,restore):
                     for key in (pygame.K_a,pygame.K_s,pygame.K_d):pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=key))
                 if frames==4:
                     assert renderer.stage.counts[:3]==[1,1,1]
+                    assert renderer.stage.base_family==2,'Normal keys did not select their original shapes'
                     pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_a,repeat=True))
                 if frames==6:
                     assert renderer.stage.counts[0]==1,'Held key retriggered'
@@ -473,9 +474,20 @@ def run(save,restore):
                 if frames==115:action('base_6')
                 if frames==210:
                     assert not renderer.stage.notes,'Completed notes did not expire'
-                    assert model.target==0,'Keyboard voices retargeted the global sculpture'
                     assert renderer.stage.weights[6]>.99,'Base controls did not finish their transition'
-                    running=False
+                if frames>=211:
+                    form=(frames-211)//50;offset=(frames-211)%50
+                    keys=(pygame.K_a,pygame.K_s,pygame.K_d,pygame.K_j,pygame.K_k,pygame.K_l,
+                          pygame.K_4,pygame.K_5,pygame.K_6,pygame.K_7)
+                    if form<10 and offset==0:
+                        renderer.stage.contacts.clear()
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=keys[form]))
+                        pygame.event.post(pygame.event.Event(pygame.KEYUP,key=keys[form]))
+                    if form<10 and offset==49:
+                        assert renderer.stage.base_family==form,f'Key did not select form {form}'
+                        assert renderer.stage.weights[form]>.99,f'Form {form} did not finish reassembling'
+                        pygame.image.save(renderer.capture(),f'captures/qa/key-shape-{form}.png')
+                        if form==9:running=False
             renderer.instrument_visible=not ui.hide
             data=ui.render(size,model,synth,renderer,camera,clock.get_fps(),toast if time.monotonic()<toast_until else '',demo)
             renderer.draw(model,data)
@@ -493,10 +505,10 @@ def run(save,restore):
             print(f'SMOKE OK: {frames} frames; {len(proof)} forms; {renderer.ctx.info["GL_RENDERER"]}')
         if args.interaction_test:print('INTERACTION OK: two decks, loop, edit, restore, demo, reverse, FX, brake, help, resize')
         if args.music_test:print('MUSIC OK: import, live overlay, music-follow toggle, loop auto-start, silent-deck recovery, pause/resume, UI')
-        if args.polyphony_test:print('POLYPHONY OK: 3 simultaneous keys + 3 synthetic fingers; independent release, held-key suppression, natural expiry')
+        if args.polyphony_test:print('POLYPHONY OK: all 10 keyboard shapes; 3 simultaneous keys + 3 synthetic fingers; independent release, held-key suppression, natural expiry')
         if args.rhythm_test:
             print(f'RHYTHM OK: {music.path.name}; {len(sync_errors)} attacks; {kick_frames} kick attacks; '
-                  f'{len(rhythm_forms)} unchanged base; {max(rhythm_joints)} independent visual notes; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
+                  f'{len(rhythm_forms)} audio-triggered shapes; {max(rhythm_joints)} independent visual notes; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '
                   f'{frames/(time.monotonic()-rhythm_started):.1f} FPS')
     finally:
         camera.stop();music.close();synth.silence();pygame.quit()

@@ -42,9 +42,10 @@ equations and remains in the development source. The preserved VJ experiment
 uses project implementations of parametric tunnels, mirrored fans, folded grids,
 spheres/toruses, ribbons and prism surfaces. Its music-led director, folded
 reassembly and pose-texture integration are implemented here; no VJ footage or
-simulation implementation was copied. The default stage now restores the original 3D fin/facet construction. Independent
-notes drive bounded local motion fields on the same ordered geometry, using the
-original metal/refraction renderer. The rejected flat and multi-model approaches
+simulation implementation was copied. The default stage restores all ten original
+3D fin/facet constructions. Normal keys select their original complete shapes;
+transient articulation and independent accent tails use the original metal and
+refraction renderer. The fixed-base, flat and multi-model approaches
 are documented as development history. Patatap informed the
 independent-trigger/overlap principle; its implementation, animations and audio
 were not copied. Reference imagery informed the desired

@@ -286,3 +286,35 @@ FPS with 8.2/19.9 ms mean/max event-dispatch lateness on the development compute
 Those numbers are not a physical end-to-end latency or touch-hardware measurement.
 The updated clip and images show one main construction with local overlays, not
 the rejected pile of complete models. No post-change participant approval is claimed.
+
+### Roll back the fixed-base interaction — 2 November 2026
+
+The author rejected the fixed-base correction: motion was too subtle and normal
+keys appeared to keep the same shape. They asked to restore the earlier variety,
+with each key controlling a different complete construction. This supersedes the
+previous local-motion-only choice; it is actual author feedback, not a new trial.
+
+The six original silhouettes are again selected directly by A/S/D/J/K/L. The four
+radial extras remain on 4/5/6/7 and all ten shape buttons remain. The startup shape
+is the original closed serpent/ring. Reassembly starts from the current pose and
+takes about 0.72 seconds; repeating a key does not restart its transition. Earlier
+accent tails remain independent and the latest key sets the destination shape.
+Original three-layer layouts and beat-driven articulation are restored for the
+six main forms. Radial extras retain six layers, which grow during a transition.
+
+Imported music can also select different complete constructions on measured
+attacks, with at least 1.6 seconds between automatic changes. There is no timed
+shape carousel. Manual shape selection has 2.2 seconds of priority. Import,
+loops, recording, save/restore, touch event routing, English UI, materials and the
+earlier F2 study are retained.
+
+Verification: 63 Python unit tests passed. The real OpenGL keyboard check selected
+and captured all ten forms and also checked three keys plus three synthetic
+fingers, independent release and completed tails. Desktop loop/session/FX checks
+passed. A 12-second bundled-track run reached five distinct audio-triggered forms,
+65 visual notes and about 59.7 FPS; mean/max event-dispatch lateness was
+10.1/18.8 ms. These are development checks, not human approval, physical-touch
+verification or end-to-end audio/display latency measurements.
+Import/follow/pause and loop takeover checks also passed. The replacement
+one-minute H.264/AAC preview contains eight audio-triggered constructions and
+406 measured attacks, and is packaged at 960 by 614 pixels for repository use.

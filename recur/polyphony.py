@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import math
 import numpy as np
 
-NAMES=('OPEN','FOLD','PETALS','TURN','DEPTH','RIPPLE')
+NAMES=('SERPENT','RIBBON','BLOOM','CRYSTAL','ORBIT','TIDE')
 LIFETIMES=(1.65,2.3,2.65,2.1,3.0,1.25)
 
 
@@ -55,10 +55,13 @@ class PolyphonicStage:
         self.time=0.;self.notes=[];self.serial=0;self.levels=[0.,0.,0.]
         self.contacts=InputContacts();self.last=[-10.]*6;self.counts=[0]*6
         self.fx=[.5,.3]
-        self.base_family=6;self.base_age=2.;self.base_duration=1.35
-        self.weights=np.eye(10,dtype=float)[6].copy();self.base_start=self.weights.copy()
+        self.base_family=0;self.base_age=2.;self.base_duration=.72
+        self.weights=np.eye(10,dtype=float)[0].copy();self.base_start=self.weights.copy()
+        self.auto_after=0.;self.motion=(0.,0.,0.,0.);self.phases=(0.,0.)
 
-    def set_base(self,family,duration=1.35):
+    def set_base(self,family,duration=.72,manual=True):
+        if manual:self.auto_after=self.time+2.2
+        if int(family)==self.base_family and duration:return
         self.base_start=self.weights.copy();self.base_family=int(family)
         self.base_age=0.;self.base_duration=max(0.,duration)
         if not duration:
@@ -72,29 +75,45 @@ class PolyphonicStage:
         if model.paused:return
         self.time+=max(0.,min(.15,dt))*(.25+.75*model.brake)
         self.levels=list(motion.levels);self.fx=list(model.fx)
+        self.motion=motion.values;self.phases=motion.phases
         self.base_age+=max(0.,dt)
         blend=float(ease(self.base_age/max(.001,self.base_duration)))
         self.weights=self.base_start*(1-blend)+np.eye(10)[self.base_family]*blend
         self.notes[:]=[note for note in self.notes if self.time-note.born<note.duration]
 
-    def note(self,voice,strength=1.,source='LIVE'):
+    def note(self,voice,strength=1.,source='LIVE',follow=True):
         if strength<=.015:return None
         if source=='TRACK':
             if voice==0:
                 result=self.spawn(0,strength,.19,True)
                 if self.levels[0]>.35:self.spawn(4,strength*.5,2.3,True)
                 if self.levels[1]>.55 and strength>.8:self.spawn(2,strength*.65,2.,True)
-                return result
-            if voice==3:
+            elif voice==3:
                 role=1 if self.levels[2]>.40 else 3
                 result=self.spawn(role,strength,.32,True)
                 if strength>.72:self.spawn(2,strength*.6,1.5,True)
-                return result
-            result=self.spawn(5,strength,.16,True)
-            if strength>.8 and self.levels[1]>.45:self.spawn(1,strength*.55,.8,True)
-            return result
-        scheduled=source not in ('LIVE','TOUCH','GRID')
-        return self.spawn(voice,strength,.16 if scheduled else 0.,scheduled)
+            else:
+                result=self.spawn(5,strength,.16,True)
+                if strength>.8 and self.levels[1]>.45:self.spawn(1,strength*.55,.8,True)
+        else:
+            scheduled=source not in ('LIVE','TOUCH','GRID')
+            result=self.spawn(voice,strength,.16 if scheduled else 0.,scheduled)
+        if source in ('LIVE','TOUCH','GRID'):
+            # Every normal performance key selects its original complete shape.
+            # Repeated hits keep the current morph moving toward its destination.
+            self.set_base(voice)
+        elif follow and result and source in ('TRACK','DEMO','LOOP') and self.time>=self.auto_after:
+            family=result.voice
+            if source=='TRACK':
+                low,mid,high=self.levels
+                if family==0 and low>.55 and mid>.45:family=7
+                elif family==1 and high>.55:family=6
+                elif family==3 and high>.35:family=9
+                elif family==5 and mid>.55:family=8
+            if family!=self.base_family:
+                self.set_base(family,duration=.9,manual=False)
+                self.auto_after=self.time+1.6
+        return result
 
     def spawn(self,voice,strength,cooldown=0.,scheduled=False):
         if self.time-self.last[voice]<cooldown:return None
