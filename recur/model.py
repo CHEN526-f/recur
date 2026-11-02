@@ -2,7 +2,7 @@
 import math
 from dataclasses import dataclass, field
 
-NAMES = ("SERPENT", "RIBBON", "BLOOM", "CRYSTAL", "ORBIT", "TIDE",
+NAMES = ("PORTAL", "FAN", "BLOOM", "CRYSTAL", "ORBIT", "TIDE",
          "IRIS", "CORONA", "ROSETTE", "FACET")
 FORM_COUNT = len(NAMES)
 VOICE_FOR_FORM = (0,1,2,3,4,5,1,2,2,3)

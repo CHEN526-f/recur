@@ -19,8 +19,8 @@ normal playback and analysis run locally without an API key.
 
 | Key | Visual voice | Sound |
 |---|---|---|
-| A | Serpent / closed ring | Kick |
-| S | Ribbon | Pitched glass melody |
+| A | Nine-layer metallic portal | Kick |
+| S | Three layered fans | Pitched glass melody |
 | D | Bloom | Chord |
 | J | Crystal | Warm pluck |
 | K | Orbit | Bass |
@@ -46,6 +46,7 @@ recognition is claimed. Beat timing depends on the recording and output devices.
 ## Controls
 
 - H: artwork-only view. F: fullscreen. P: pause. M: mute.
+- N / SURGE: expand a layered metallic crown to the window edges, then recede.
 - I / LOOP: open the 16-step editor. Adding a cell auditions and starts the loop.
 - R: overdub live notes. The editor displays its playhead, state and deck gain.
 - Tab: choose deck A/B. The crossfader controls their sound gains.
@@ -56,6 +57,17 @@ recognition is claimed. Beat timing depends on the recording and output devices.
 - F2 / SCULPT: the preserved earlier interaction study.
 - 4/5/6/7: select iris/corona/rosette/facet as the main construction.
 - Backspace: reset controls while preserving your loop. Escape: exit.
+
+A now uses nine nested crowns with depth and alternating rotation. Musical
+climaxes open extra crown layers around any selected shape and expand the stage
+to the display edges. N performs the same expansion manually. Lighting remains
+restrained; use H and F for an unobstructed fullscreen performance.
+S opens three layered fans rather than one strip. Dragging the canvas only rotates
+the camera and holds automatic shape selection; a short click plays on release.
+Music accents move the fins immediately,
+while complete shape changes follow beat position and band balance with tempo-scaled
+reassembly, rather than changing on every hat or a fixed time interval. Strong
+percussion accents can also reassemble the shape after a longer phrase.
 
 Application labels, guidance and notices are English. The project title retains
 its Chinese name. The native file chooser follows the operating system language.

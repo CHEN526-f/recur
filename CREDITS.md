@@ -43,13 +43,16 @@ uses project implementations of parametric tunnels, mirrored fans, folded grids,
 spheres/toruses, ribbons and prism surfaces. Its music-led director, folded
 reassembly and pose-texture integration are implemented here; no VJ footage or
 simulation implementation was copied. The default stage restores all ten original
-3D fin/facet constructions. Normal keys select their original complete shapes;
+3D fin/facet vocabulary. Normal keys select distinct complete shapes;
 transient articulation and independent accent tails use the original metal and
 refraction renderer. The fixed-base, flat and multi-model approaches
 are documented as development history. Patatap informed the
 independent-trigger/overlap principle; its implementation, animations and audio
 were not copied. Reference imagery informed the desired
 richness and material direction; its meshes and footage are not artwork assets.
+The later portal and screen-spanning crown use original parametric geometry:
+nested radii, staggered depth, counter-rotation and a phrase-driven emergence
+envelope. They reference the author's desired scale and richness, not copied meshes.
 
 OpenAI Codex assisted with interpretation of the brief, code, geometry and
 material implementation, sound synthesis, debugging, automated checks and

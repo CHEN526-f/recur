@@ -3,7 +3,7 @@
 **Public repository:** https://github.com/CHEN526-f/recur
 **Author:** CHEN Hongfan · **Course:** SD5913 · **Assignment:** 3
 
-RECUR is a playable audiovisual instrument. Six keys select six distinct original
+RECUR is a playable audiovisual instrument. Six keys select six distinct
 3D constructions with harmonic/percussive sounds. Four extra keys restore the
 radial constructions. You can combine keys or touchscreen contacts, build a loop,
 or import music. Shapes reassemble smoothly; note accents keep their own tails.
@@ -37,21 +37,22 @@ playing keys. The title contains “polyphonic instrument”.
 
 | Key | Visual voice | Sound |
 |---|---|---|
-| A | Serpent / closed ring | Kick |
-| S | Ribbon | Glass melody |
+| A | Portal: nine nested metallic crowns | Kick |
+| S | Three layered, unfolding fans | Glass melody |
 | D | Bloom | Chord |
 | J | Crystal | Warm pluck |
 | K | Orbit | Bass |
 | L | Tide | Percussion |
 
-![Ten restored 3D constructions](docs/polyphonic-voices.jpg)
+![Ten distinct 3D constructions](docs/polyphonic-voices.jpg)
 
 Normal keys select their complete constructions directly, without Shift. A new
 key reassembles the main silhouette from its current pose in about 0.72 seconds.
 The most recently played key determines the destination; notes from earlier keys
 continue their own accent envelopes. Repeating a key does not restart an unfinished
-transition. The six original forms retain their three-layer construction; radial
-extras use six layers. Transient-driven articulation restores visible beat motion.
+transition. A is a nine-layer portal with counter-rotation and depth, replacing
+the single ring. S opens three separate layered fans. D/J/K/L retain their construction; radial extras
+use six layers. Transient-driven articulation restores visible beat motion.
 
 Try A + S, then add D or J while the first notes finish. Each accepted hit keeps
 its own smooth attack and release. Holding a key does not repeatedly retrigger it.
@@ -78,9 +79,10 @@ multi-touch device has not been verified.
 | FX pad | Tone, echo, local torsion and spatial spread |
 | P / M | Pause all animation / mute audio |
 | H / F | Artwork-only view / fullscreen |
+| N / SURGE | Trigger a screen-spanning metallic crown, with a smooth return |
 | E / SAVE | Save an image and session in `captures/` |
 | O / LOAD | Restore the saved loops, tempo and material controls |
-| A/S/D/J/K/L / shape buttons | Choose serpent, ribbon, bloom, crystal, orbit or tide |
+| A/S/D/J/K/L / shape buttons | Choose portal, fan, bloom, crystal, orbit or tide |
 | F2 / SCULPT | Switch to the earlier single-sculpture interaction study |
 | 4 / 5 / 6 / 7 | Choose iris/corona/rosette/facet as the main construction |
 | Backspace / Escape | Reset controls while retaining loops / exit |
@@ -108,11 +110,24 @@ strength distribute midrange notes, bass outlines and accents; this is visual
 orchestration, not recognized notes, chords, emotion or musical genre.
 
 Measured attacks drive articulation and can select a new complete construction.
-Automatic shape changes are spaced at least 1.6 seconds apart so reassembly can
-finish; there is no timer that advances shapes without a note. Manual selection
-takes priority for 2.2 seconds. Percussive accents continue during this interval.
+Whole-form changes follow musical accents, beat position and changes in band
+balance, with at least two beats between changes. Reassembly duration follows
+tempo and attack strength. Quiet hats add detail without switching the whole form;
+strong on-beat percussion accents can reassemble it after a longer phrase.
+There is no timer that advances shapes without a note. Manual selection takes
+priority for 2.2 seconds. Percussive accents continue during this interval.
 Live keys can add notes while the recording continues. Beat detection is strongest
 with clear percussion; device latency and ambiguous rhythm remain limitations.
+
+At a musical climax, nine extra ordered crown layers emerge around the current
+construction. The stage opens to the window edges and the view moves forward
+slightly. N / SURGE performs this expansion directly; a held Space release can
+also produce it. H hides the controls and F enters fullscreen. Expansion changes
+geometry and framing while retaining the existing restrained lighting and bloom.
+The stage recedes naturally after the phrase. S/D/J/K/L and 4/5/6/7 retain their
+different core shapes beneath the crown.
+
+![Actual screen-spanning portal render](docs/surge-preview.png)
 
 LOCAL is an original 32-bar composition, about 71 seconds at 108 BPM. It combines
 kick, hats/claps, bass, chord pads and two melodic parts through an intro, theme,
@@ -122,11 +137,14 @@ it was playing. Live notes follow the same harmonic palette.
 
 ## Main construction and preserved controls
 
-Normal A/S/D/J/K/L keys and shape buttons select the six original constructions.
+Normal A/S/D/J/K/L keys and shape buttons select six distinct constructions.
 4/5/6/7 retain iris, corona, rosette and facet. Shift+key also permits silent shape
 selection. Shape selection is saved with the session.
 F2 retains the earlier interaction study. Camera orbit, zoom, palettes, background,
 Space brake/release, crossfading, overdub, loops and music import remain available.
+Dragging the canvas rotates the view without playing a note or selecting a shape.
+Automatic shape selection is held during an orbit drag; musical accents continue.
+A short canvas click plays on release; pads and keyboard notes still trigger on press.
 
 ## Implementation and limits
 

@@ -6,6 +6,12 @@ from .materials import SURFACE_FRAGMENT,polished_rib,beveled_box
 from .structures import GLSL
 
 
+def screen_opening(expansion):
+    """A phrase opens the viewport; isolated notes leave the controls in place."""
+    value=max(0.,min(1.,(expansion-.30)/.60))
+    return value*value*(3.-2.*value)
+
+
 def note_field(note,now,theta):
     p=note.phase(now);env=note.envelope(now)*note.strength
     angle=math.atan2(note.center[1]/.65,note.center[0]/1.25)
@@ -63,11 +69,13 @@ def deformation(stage):
 
 
 VERTEX=r'''#version 330
+#define PLAYABLE_STAGE
 in vec3 in_pos;in vec3 in_normal;in float in_material;
 in vec3 in_tile;in vec3 in_tile_normal;
 uniform mat4 projection;uniform mat4 view;
 uniform vec2 orbit;uniform vec2 fx;uniform float phase;
 uniform float weights[10];uniform sampler2D deformation_map;uniform float expansion;
+uniform bool outer_pass;uniform float immersion;uniform float stage_aspect;
 uniform vec4 motion;uniform vec2 motion_phase;
 out vec3 world;out vec3 normal;out float material;out float instance;
 const float PI=3.14159265359;
@@ -79,6 +87,20 @@ void main(){
  float id=float(gl_InstanceID),band=floor(id/216.);
  float theta=mod(id,216.)/216.*2.*PI;
  vec3 center;mat3 local;float size;
+ float tile=weights[3]+weights[9];
+ if(outer_pass){
+   float signature=0.;for(int k=0;k<10;k++)signature+=weights[k]*float(k);
+   float harmonic=4.+mod(floor(signature+.5),3.);
+   float direction=mod(band,2.)<.5?1.:-1.;
+   float a=theta+phase*.045*direction+band*.065;
+   float emerge=smoothstep(band*.045,.42+band*.045,immersion);
+   float ripple=.075*cos(a*harmonic+band*.20+motion_phase.y*.18);
+   float radius=(1.08+band*.39+ripple)*(1.+immersion*.20+motion.x*.045);
+   center=vec3(cos(a)*radius,sin(a)*radius,(band-4.)*.13-(1.-emerge)*3.);
+   center.x*=max(1.,stage_aspect/1.65);
+   local=rz(a)*ry(.4+.3*sin(a*harmonic+band*.3+phase*.18));
+   size=(.34+band*.012)*emerge;tile=0.;
+ }else{
  structure(theta,band,phase,vec3(0.),weights,0.,center,local,size);
  int row=int(band)*2,index=int(mod(id,216.));
  vec4 field=texelFetch(deformation_map,ivec2(index,row),0);
@@ -86,15 +108,15 @@ void main(){
  center.xy=(rz(field.y)*vec3(center.xy*(1.+field.x),0.)).xy;
  center.z=center.z*(1.+depth)+field.z;
  local=rz(field.y)*local*ry(field.w+(fx.x-.5)*.35);
- // The original six constructions have three layers; radial extras have six.
+ // Portal has nine nested layers; radial extras have six; other bases have three.
  // Additional layers grow with the morph instead of popping into view.
- if(band>=3.)local*=weights[6]+weights[7]+weights[8]+weights[9];
- float tile=weights[3]+weights[9];
+ if(band>=3.)local*=weights[0]+(band<6.?weights[6]+weights[7]+weights[8]+weights[9]:0.);
+ }
  vec3 pos=mix(in_pos,in_tile,tile);
  vec3 norm=normalize(mix(in_normal,in_tile_normal,tile));
  mat3 camera=rx(orbit.y)*ry(orbit.x);
  vec3 p=camera*(center+local*pos*size)*(1.+(fx.y-.3)*.18)*(1.+expansion*.20);
- world=p;normal=camera*local*norm;material=in_material;instance=id;
+ world=p;normal=camera*local*norm;material=in_material;instance=id+(outer_pass?1944.:0.);
  gl_Position=projection*view*vec4(p,1.);
 }
 '''.replace('// ARCHITECTURE',GLSL)
@@ -124,12 +146,14 @@ class SpatialStageRenderer:
         self.program['projection'].write(projection.T.tobytes());self.program['view'].write(view.T.tobytes())
         self.program['weights'].write(stage.weights.astype('f4').tobytes())
         self.program['phase']=stage.time
-        self.instances=216*(6 if sum(stage.weights[6:])>.00001 else 3)
+        self.immersion=screen_opening(expansion)
+        self.instances=216*(9 if stage.weights[0]>.00001 else 6 if sum(stage.weights[6:])>.00001 else 3)
         tile=stage.weights[3]+stage.weights[9]
         self.mesh=1 if tile>.99999 else 0 if tile<.00001 else 2
         for name,value in (('resolution',resolution),('orbit',tuple(orbit)),('fx',tuple(fx)),
                            ('palette',palette),('camera_position',(0.,0.,zoom)),('opaque_scene',3),
                            ('energy',.1),('evolution_strength',0.),('deformation_map',5),('expansion',expansion),
+                           ('immersion',self.immersion),('stage_aspect',projection[1,1]/projection[0,0]),
                            ('motion',stage.motion),('motion_phase',stage.phases)):
             if name in self.program:self.program[name].value=value
 
@@ -138,5 +162,9 @@ class SpatialStageRenderer:
         self.ctx.enable(moderngl.DEPTH_TEST)
         self.ctx.disable(moderngl.BLEND)
         self.ctx.depth_mask=True
+        self.program['outer_pass']=False
         self.vaos[self.mesh].render(instances=self.instances)
+        if self.immersion>.0001:
+            self.program['outer_pass']=True
+            self.vaos[0].render(instances=216*9)
         self.ctx.disable(moderngl.DEPTH_TEST)

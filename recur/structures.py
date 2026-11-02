@@ -8,17 +8,21 @@ void legacyFrame(float theta,float band,float phase,int shape,out vec3 p,out mat
  float sector=floor(j/72.),v=mod(j,72.)/71.,t=phase*.22;
  float angle=0.,roll=0.;
  if(shape==0){
-   float q=base+t*.18;
-   p=vec3(1.62*cos(q),.67*sin(q)+.15*sin(q*2.),.18*sin(q*2.));
-   vec2 tangent=vec2(-1.62*sin(q),.67*cos(q)+.3*cos(q*2.));
+   float direction=mod(band,2.)<.5?1.:-1.;
+   float q=base+t*.18*direction+band*.085;
+   float radius=.48+band*.205+.065*cos(q*5.-t*.3);
+   float dr=-.325*sin(q*5.-t*.3);
+   p=vec3(radius*cos(q),radius*sin(q),(band-4.)*.14+.08*sin(q*5.+band*.22));
+   vec2 tangent=vec2(dr*cos(q)-radius*sin(q),dr*sin(q)+radius*cos(q));
    angle=atan(tangent.y,tangent.x)-PI*.5;
-   p.xy+=vec2(cos(angle),sin(angle))*(band-1.)*.085;
-   roll=.15*sin(q);size=.52+.12*sin(u*PI);
+   roll=.36+.25*sin(q*5.+t*.4+band*.4);size=.28+band*.014;
  }else if(shape==1){
-   float wave=u*PI*2.+t*.35;
-   p=vec3((u-.5)*3.85,.38*sin(wave)+(band-1.)*.12,.22*cos(wave));
-   angle=atan(.38*PI*2.*cos(wave),3.85)-PI*.5;
-   roll=.7*sin(wave*.5);size=.5;
+   float a=sector*PI*2./3.+(v-.5)*1.25+t*.14;
+   float radius=.45+v*1.30+band*.22;
+   p=vec3(cos(a)*radius,sin(a)*radius,(band-1.)*.28+.12*sin(v*PI+t));
+   vec2 tangent=vec2(cos(a)*1.30-sin(a)*radius*1.25,sin(a)*1.30+cos(a)*radius*1.25);
+   angle=atan(tangent.y,tangent.x)-PI*.5;
+   roll=.40+.35*sin(v*PI+band*.5);size=.28+.14*sin(v*PI);
  }else if(shape==2){
    angle=sector*PI*2./3.+v*2.55+band*.17+t*.10;
    float r=.35+v*1.35+band*.09;
@@ -66,7 +70,7 @@ void articulate(float theta,float band,float weights[10],inout vec3 p,inout mat3
  float wave=sin(theta*2.-beat*2.+band*.85);
  vec2 outward=p.xy/max(length(p.xy),.001);
  // Recoil on the attack; a travelling fold continues between the notes.
- p*=1.+kick*.20+body*.07*wave;
+ p*=1.+kick*(.20+.18*weights[0])+body*.07*wave;
  p.xy+=outward*(body*.17*wave*(1.-openForm));
  p.y+=openForm*body*.32*sin(theta*2.-beat+band*.65);
  p.z+=body*(.25*sin(theta*2.-beat+band*.9)+(band-1.)*.08*sin(beat));
@@ -99,6 +103,9 @@ void structure(float theta,float band,float t,vec3 music,float weights[10],float
  local*=1.+music.z*.08;
  articulate(theta,band,weights,center,local);
  float bridge=reassembly(weights);
+#ifdef PLAYABLE_STAGE
+ bridge*=.20;
+#endif
  if(bridge>.0001){
    float u=theta/(PI*2.),sector=floor(u*6.),q=fract(u*6.);
    float signature=0.;for(int k=0;k<10;k++)signature+=weights[k]*float(k+1);
@@ -127,13 +134,14 @@ def form_center(theta,band,phase,music,shape):
     # CPU construction positions used to verify silhouette preservation.
     j=math.floor(theta/math.tau*216+.0001);u=j/215;base=u*math.tau;t=phase*.22
     if shape==0:
-        q=base+t*.18
-        angle=math.atan2(.67*math.cos(q)+.3*math.cos(q*2),-1.62*math.sin(q))-math.pi*.5
-        return (1.62*math.cos(q)+math.cos(angle)*(band-1)*.085,
-                .67*math.sin(q)+.15*math.sin(q*2)+math.sin(angle)*(band-1)*.085,.18*math.sin(q*2))
+        q=base+t*.18*(1 if band%2==0 else -1)+band*.085
+        radius=.48+band*.205+.065*math.cos(q*5-t*.3)
+        return (radius*math.cos(q),radius*math.sin(q),
+                (band-4)*.14+.08*math.sin(q*5+band*.22))
     if shape==1:
-        wave=u*math.tau+t*.35
-        return ((u-.5)*3.85,.38*math.sin(wave)+(band-1)*.12,.22*math.cos(wave))
+        sector=j//72;v=(j%72)/71
+        a=sector*math.tau/3+(v-.5)*1.25+t*.14;radius=.45+v*1.30+band*.22
+        return (math.cos(a)*radius,math.sin(a)*radius,(band-1)*.28+.12*math.sin(v*math.pi+t))
     if shape==2:
         sector=j//72;v=(j%72)/71
         a=sector*math.tau/3+v*2.55+band*.17+t*.1;r=.35+v*1.35+band*.09
@@ -161,7 +169,7 @@ def articulate_center(p,theta,band,weights,motion,motion_phase):
     open_form=weights[1]+weights[5];crystal=weights[3]
     wave=math.sin(theta*2-beat*2+band*.85)
     radius=max(math.hypot(p[0],p[1]),.001);outward=(p[0]/radius,p[1]/radius)
-    x,y,z=(v*(1+kick*.20+body*.07*wave) for v in p)
+    x,y,z=(v*(1+kick*(.20+.18*weights[0])+body*.07*wave) for v in p)
     offset=body*.17*wave*(1-open_form)
     x+=outward[0]*offset;y+=outward[1]*offset
     y+=open_form*body*.32*math.sin(theta*2-beat+band*.65)

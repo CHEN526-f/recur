@@ -7,7 +7,7 @@ from .materials import SURFACE_FRAGMENT, beveled_box, polished_rib,panel_mesh
 from .motion import MusicalMotion
 from .morphology import Morphogenesis
 from .polyphony import PolyphonicStage
-from .spatial import SpatialStageRenderer
+from .spatial import SpatialStageRenderer,screen_opening
 
 
 VERTEX = r'''
@@ -182,6 +182,7 @@ class SculptureRenderer:
         self.motion.transport_beat=(music.beat_position if track_playing else
                                     performance.position/4. if performance and performance.playing else None)
         self.motion.update(model,dt)
+        self.stage.tempo=music.bpm if track_playing else model.bpm
         self.stage.update(model,self.motion,dt)
         self.zoom=ease(self.zoom,self.zoom_target,6.,dt)
         for i in (0,1):self.orbit[i]=ease(self.orbit[i],self.orbit_target[i],6.,dt)
@@ -252,13 +253,15 @@ class SculptureRenderer:
         self.msaa_fbo.use();self.ctx.viewport=(0,0,w,h)
         self.msaa_fbo.clear(.001,.0015,.002,1.,depth=1.)
         self.ctx.disable(moderngl.DEPTH_TEST)
-        height=h-265 if self.instrument_visible else h
-        bottom=205 if self.instrument_visible else 0
+        opening=screen_opening(self.climax.amount)
+        height=round(h-265*(1-opening)) if self.instrument_visible else h
+        bottom=round(205*(1-opening)) if self.instrument_visible else 0
         self.ctx.viewport=(0,bottom,w,height)
         f=1/math.tan(math.radians(39)/2);near,far=.1,100.
         proj=np.array([[f/(w/height),0,0,0],[0,f,0,0],[0,0,(far+near)/(near-far),2*far*near/(near-far)],[0,0,-1,0]],dtype='f4')
-        view=np.eye(4,dtype='f4');view[2,3]=-self.zoom
-        self.stage_renderer.prepare(self.stage,proj,view,(float(w),float(h)),self.orbit,model.fx,self.palette,self.zoom,self.climax.amount)
+        camera_distance=self.zoom*(1-opening*.10)
+        view=np.eye(4,dtype='f4');view[2,3]=-camera_distance
+        self.stage_renderer.prepare(self.stage,proj,view,(float(w),float(h)),self.orbit,model.fx,self.palette,camera_distance,self.climax.amount)
         self.stage_renderer.draw_pass(0)
         self.ctx.copy_framebuffer(self.opaque_fbo,self.msaa_fbo)
         self.opaque_color.use(3)

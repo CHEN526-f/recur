@@ -318,3 +318,55 @@ verification or end-to-end audio/display latency measurements.
 Import/follow/pause and loop takeover checks also passed. The replacement
 one-minute H.264/AAC preview contains eight audio-triggered constructions and
 406 measured attacks, and is packaged at 960 by 614 pixels for repository use.
+
+### Add depth to A and open the stage — 2 November 2026
+
+The author requested replacing A's isolated ring-band appearance with a richer
+construction, and adding a dramatic expansion to the whole display like the
+original supplied references. A now selects PORTAL, with nine nested, five-lobed
+metal crowns at ordered radii and depths. Other shape keys and existing music,
+loop, touch, session and material controls remain.
+
+During a musical climax, nine outer crown layers emerge around the selected core.
+The viewport grows to the window edges and the view advances slightly. This uses
+the existing phrase envelope, which rises and recedes smoothly. N / SURGE performs
+the expansion directly; the Space release is retained. Existing lighting and
+bloom remain restrained. The construction is procedural geometry, not reference
+video or copied assets. UI and supplied guidance remain English.
+
+Development verification includes 65 passing Python tests and real OpenGL runs.
+The climax render processed 1,150 frames at about 62 FPS on Intel Iris Xe graphics.
+Lit edge-strip coverage changed from 0.0% to 58.5%; pixels with all RGB channels
+above 248 occupied 0.09% of the peak frame. The check also confirmed a smooth
+return. These measurements describe the tested view, not every possible camera or
+track. No additional human-participant or physical multi-touch approval is claimed.
+
+### Separate orbiting from performance; revise S and music phrasing
+
+During the same iteration the author reported that S was still a single strip,
+dragging to rotate unexpectedly selected another form, and music changes felt
+mechanical. S now opens three distinct fan groups, each with three depth layers.
+The other mapped shapes and the new screen-spanning surge remain available.
+
+Canvas mouse-down now begins a possible orbit gesture without playing a note.
+Movement beyond six pixels rotates the camera; release after a short click plays
+one note. Automatic shape selection is held during an orbit drag while music
+accents continue. Pads and keys still trigger on press. The OpenGL event test verifies
+that a drag changes the orbit but neither form nor note count, then verifies that
+a click on the same area plays on release.
+
+Music retains transient-driven fin motion on every accepted attack. Whole-form
+selection now considers beat position, attack strength and spectral balance,
+leaves at least two beats between selections, and excludes quiet hats from
+whole-form selection. Strong on-beat percussion accents can select a new form
+after at least four beats. Transition duration follows tempo and strength rather than a constant
+0.9 seconds. The shared intermediate sixfold assembly is reduced in the default
+stage so each transition preserves more of its source and destination instead of
+shrinking into the same intermediate flower. Manual selection retains priority.
+
+All 69 Python tests and the ten-shape, SURGE, contact and mouse-gesture integration
+checks passed. A measured demo run processed 82 attacks and 65 visual notes;
+mean/max dispatch lateness was 9.1/19.9 ms. Its approximately 57.8 FPS result
+includes a short overlapping development preview, and is not a standalone
+performance benchmark or a claim of subjective musical smoothness. The updated
+music clip is renderer output for review; no additional human approval is claimed.

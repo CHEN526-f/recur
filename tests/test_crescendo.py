@@ -2,9 +2,17 @@ import unittest
 
 from recur.crescendo import Crescendo
 from recur.model import Instrument
+from recur.spatial import screen_opening
 
 
 class CrescendoTests(unittest.TestCase):
+    def test_stage_opening_has_a_quiet_zone_and_reaches_the_display_edges(self):
+        self.assertEqual(screen_opening(.2),0.)
+        self.assertEqual(screen_opening(1.),1.)
+        self.assertGreater(screen_opening(.8),.9)
+        values=[screen_opening(i/100) for i in range(101)]
+        self.assertTrue(all(a<=b for a,b in zip(values,values[1:])))
+
     def advance(self, state, model, seconds, hz=60):
         for _ in range(round(seconds * hz)):
             state.update(model, 1. / hz)

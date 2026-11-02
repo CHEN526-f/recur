@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import math
 import numpy as np
 
-NAMES=('SERPENT','RIBBON','BLOOM','CRYSTAL','ORBIT','TIDE')
+NAMES=('PORTAL','FAN','BLOOM','CRYSTAL','ORBIT','TIDE')
 LIFETIMES=(1.65,2.3,2.65,2.1,3.0,1.25)
 
 
@@ -28,7 +28,8 @@ class Note:
 
     def envelope(self,now):
         age=now-self.born
-        return float(ease(age/.09)*(1-ease((age-self.duration*.52)/(self.duration*.48))))
+        attack=.035 if self.scheduled else .065
+        return float(ease(age/attack)*(1-ease((age-self.duration*.52)/(self.duration*.48))))
 
 
 class InputContacts:
@@ -58,11 +59,15 @@ class PolyphonicStage:
         self.base_family=0;self.base_age=2.;self.base_duration=.72
         self.weights=np.eye(10,dtype=float)[0].copy();self.base_start=self.weights.copy()
         self.auto_after=0.;self.motion=(0.,0.,0.,0.);self.phases=(0.,0.)
+        self.beat=0.;self.tempo=108.;self.changed_beat=-8.;self.last_balance=np.zeros(3)
+        self.orbiting=False
 
     def set_base(self,family,duration=.72,manual=True):
         if manual:self.auto_after=self.time+2.2
         if int(family)==self.base_family and duration:return
         self.base_start=self.weights.copy();self.base_family=int(family)
+        self.changed_beat=self.beat
+        self.last_balance=np.array(self.levels)/max(.01,sum(self.levels))
         self.base_age=0.;self.base_duration=max(0.,duration)
         if not duration:
             self.weights=np.eye(10,dtype=float)[self.base_family].copy()
@@ -70,12 +75,14 @@ class PolyphonicStage:
 
     def reset(self):
         self.notes.clear();self.contacts.clear();self.last=[-10.]*6
+        self.changed_beat=-8.;self.last_balance=np.zeros(3);self.auto_after=self.time
 
     def update(self,model,motion,dt):
         if model.paused:return
         self.time+=max(0.,min(.15,dt))*(.25+.75*model.brake)
         self.levels=list(motion.levels);self.fx=list(model.fx)
         self.motion=motion.values;self.phases=motion.phases
+        self.beat=motion.beat
         self.base_age+=max(0.,dt)
         blend=float(ease(self.base_age/max(.001,self.base_duration)))
         self.weights=self.base_start*(1-blend)+np.eye(10)[self.base_family]*blend
@@ -102,7 +109,17 @@ class PolyphonicStage:
             # Every normal performance key selects its original complete shape.
             # Repeated hits keep the current morph moving toward its destination.
             self.set_base(voice)
-        elif follow and result and source in ('TRACK','DEMO','LOOP') and self.time>=self.auto_after:
+        elif follow and not self.orbiting and result and source in ('TRACK','DEMO','LOOP') and self.time>=self.auto_after:
+            # Every onset still moves the fins. Whole-form changes need a musical
+            # accent and a change of balance, rather than a fixed wall-clock cycle.
+            gap=self.beat-self.changed_beat
+            balance=np.array(self.levels)/max(.01,sum(self.levels))
+            novelty=float(abs(balance-self.last_balance).sum())
+            on_beat=abs(self.beat-round(self.beat))<.22
+            accent=result.voice!=5 and strength>(.52 if source=='TRACK' else .20)
+            accent=accent or (source=='TRACK' and result.voice==5 and strength>.86 and gap>=4. and on_beat)
+            if gap<2. or not accent or not (on_beat and (novelty>.12 or strength>.88) or gap>=6.):
+                return result
             family=result.voice
             if source=='TRACK':
                 low,mid,high=self.levels
@@ -111,8 +128,10 @@ class PolyphonicStage:
                 elif family==3 and high>.35:family=9
                 elif family==5 and mid>.55:family=8
             if family!=self.base_family:
-                self.set_base(family,duration=.9,manual=False)
-                self.auto_after=self.time+1.6
+                beat_seconds=60./max(60.,self.tempo)
+                duration=max(.28,min(.70,(1.05-.55*strength)*beat_seconds))
+                self.set_base(family,duration=duration,manual=False)
+                self.auto_after=self.time+duration+beat_seconds*.35
         return result
 
     def spawn(self,voice,strength,cooldown=0.,scheduled=False):

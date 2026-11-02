@@ -40,7 +40,7 @@ def run(save,restore):
     synth.muted=args.mute or args.smoke_test or args.interaction_test or args.music_test or args.rhythm_test
     music=MusicTrack();music.muted=synth.muted;renderer.music=music
     performance=Performance();renderer.performance=performance
-    clock=pygame.time.Clock();running=True;drag=None;jog_angle=0.;jog_last=0.;scratch_last=0.
+    clock=pygame.time.Clock();running=True;drag=None;orbit_press=None;jog_angle=0.;jog_last=0.;scratch_last=0.
     demo=False;backup=None;backup_music=False;backup_forms=None;toast='';toast_until=0.
     camera_gate=[False]*4;camera_last=[-10.]*4
     smoke_stage=-1;smoke_time=0.;proof=set();frames=0
@@ -114,6 +114,8 @@ def run(save,restore):
             ui.show_help=not ui.show_help;model.holding=False;model.jog[:]=[None,None]
         elif name=='camera':ui.show_camera=not ui.show_camera
         elif name=='grid':ui.show_grid=not ui.show_grid
+        elif name=='surge':
+            if not model.paused:renderer.climax.drop(1.)
         elif name=='mute':synth.muted=not synth.muted;music.muted=synth.muted;synth.silence()
         elif name=='music':
             if demo:
@@ -215,7 +217,7 @@ def run(save,restore):
                     size=(max(1024,event.w),max(720,event.h))
                     pygame.display.set_mode(size,flags);renderer.resize(size)
                 elif event.type==pygame.WINDOWFOCUSLOST:
-                    model.release();model.jog[:]=[None,None];drag=None;synth.silence()
+                    model.release();model.jog[:]=[None,None];drag=None;orbit_press=None;synth.silence()
                     renderer.stage.contacts.clear()
                 elif event.type==pygame.KEYDOWN:
                     k=event.key
@@ -233,6 +235,7 @@ def run(save,restore):
                     elif k==pygame.K_TAB:model.selected_deck=1-model.selected_deck
                     elif k==pygame.K_SPACE and not model.paused:model.holding=True
                     elif k==pygame.K_i:action('grid')
+                    elif k==pygame.K_n:action('surge')
                     elif k==pygame.K_h:ui.hide=not ui.hide
                     elif k==pygame.K_m:action('mute')
                     elif k==pygame.K_v:action('music')
@@ -316,18 +319,25 @@ def run(save,restore):
                         if not used:
                             if renderer.play_mode:
                                 voice=renderer.stage.contacts.zone(pos[0]/size[0],pos[1]/size[1])
-                                hit(voice,'TOUCH');drag='orbit'
+                                orbit_press={'voice':voice,'distance':0.};drag='orbit'
                             else:drag='orbit'
-                elif event.type==pygame.MOUSEBUTTONUP:drag=None;model.jog[:]=[None,None]
+                elif event.type==pygame.MOUSEBUTTONUP:
+                    if event.button==1 and drag=='orbit' and orbit_press and orbit_press['distance']<=6.:
+                        hit(orbit_press['voice'],'TOUCH')
+                    drag=None;orbit_press=None;model.jog[:]=[None,None]
                 elif event.type==pygame.MOUSEMOTION and drag is not None:
                     if drag=='orbit':
-                        dx,dy=event.rel;renderer.orbit_target[0]+=dx*.003;renderer.orbit_target[1]+=dy*.003
+                        dx,dy=event.rel
+                        if orbit_press:orbit_press['distance']+=math.hypot(dx,dy)
+                        if not orbit_press or orbit_press['distance']>6.:
+                            renderer.orbit_target[0]+=dx*.003;renderer.orbit_target[1]+=dy*.003
                     else:move_control(event.pos)
             if type(drag) is int and time.monotonic()-jog_last>.08:model.jog[drag]=0.
             keys=pygame.key.get_pressed()
             if not ui.show_help:
                 renderer.orbit_target[0]+=(keys[pygame.K_RIGHT]-keys[pygame.K_LEFT])*dt*.6
                 renderer.orbit_target[1]+=(keys[pygame.K_DOWN]-keys[pygame.K_UP])*dt*.6
+            renderer.stage.orbiting=drag=='orbit'
             if synth.enabled:
                 measured=music.sample()
                 renderer.motion.external=measured if music.playing else [0.,0.,0.]
@@ -472,6 +482,8 @@ def run(save,restore):
                 if frames==80:action('base_1')
                 if frames==100:assert renderer.stage.base_family==1
                 if frames==115:action('base_6')
+                if frames==130:pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_n))
+                if frames==160:assert renderer.climax.amount>.6,'SURGE did not open the stage'
                 if frames==210:
                     assert not renderer.stage.notes,'Completed notes did not expire'
                     assert renderer.stage.weights[6]>.99,'Base controls did not finish their transition'
@@ -487,10 +499,26 @@ def run(save,restore):
                         assert renderer.stage.base_family==form,f'Key did not select form {form}'
                         assert renderer.stage.weights[form]>.99,f'Form {form} did not finish reassembling'
                         pygame.image.save(renderer.capture(),f'captures/qa/key-shape-{form}.png')
-                        if form==9:running=False
+                        if form==9:
+                            mouse_count=sum(renderer.stage.counts);mouse_orbit=renderer.orbit_target.copy()
+                if frames==712:
+                    pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=(230,164)))
+                    pygame.event.post(pygame.event.Event(pygame.MOUSEMOTION,pos=(310,199),rel=(80,35),buttons=(1,0,0)))
+                if frames==714:pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONUP,button=1,pos=(310,199)))
+                if frames==716:
+                    assert renderer.stage.base_family==9 and sum(renderer.stage.counts)==mouse_count,'Orbit drag triggered a shape'
+                    assert renderer.orbit_target!=mouse_orbit,'Orbit drag did not rotate the view'
+                    pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=(230,164)))
+                    pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONUP,button=1,pos=(230,164)))
+                if frames==718:
+                    assert renderer.stage.base_family==0 and sum(renderer.stage.counts)==mouse_count+1,'Canvas click did not trigger on release'
+                    running=False
             renderer.instrument_visible=not ui.hide
             data=ui.render(size,model,synth,renderer,camera,clock.get_fps(),toast if time.monotonic()<toast_until else '',demo)
             renderer.draw(model,data)
+            if args.polyphony_test and frames==1:
+                Path('captures/qa').mkdir(parents=True,exist_ok=True)
+                pygame.image.save(renderer.capture(),'captures/qa/startup-interface.png')
             if args.interaction_test and frames==15:
                 pygame.image.save(renderer.capture(),'captures/qa/song-interface.png')
             if args.music_test and frames==17:
@@ -505,7 +533,7 @@ def run(save,restore):
             print(f'SMOKE OK: {frames} frames; {len(proof)} forms; {renderer.ctx.info["GL_RENDERER"]}')
         if args.interaction_test:print('INTERACTION OK: two decks, loop, edit, restore, demo, reverse, FX, brake, help, resize')
         if args.music_test:print('MUSIC OK: import, live overlay, music-follow toggle, loop auto-start, silent-deck recovery, pause/resume, UI')
-        if args.polyphony_test:print('POLYPHONY OK: all 10 keyboard shapes; 3 simultaneous keys + 3 synthetic fingers; independent release, held-key suppression, natural expiry')
+        if args.polyphony_test:print('POLYPHONY OK: all 10 keyboard shapes; SURGE; 3 keys + 3 synthetic fingers; independent release; orbit drag never plays; canvas click plays on release')
         if args.rhythm_test:
             print(f'RHYTHM OK: {music.path.name}; {len(sync_errors)} attacks; {kick_frames} kick attacks; '
                   f'{len(rhythm_forms)} audio-triggered shapes; {max(rhythm_joints)} independent visual notes; mean/max scheduling delay {sum(sync_errors)/len(sync_errors)*1000:.1f}/{max(sync_errors)*1000:.1f} ms; '

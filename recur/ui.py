@@ -93,12 +93,12 @@ class Interface:
                 self.button(surf,f'base_{i}',name,(w//2-355+i*72,base-32,66,23),renderer.stage.base_family==i)
             pygame.draw.rect(surf,PANEL,(w//2-238,base-58,476,20),border_radius=4)
             self.text(surf,'A S D J K L: SIX SHAPES / 4 5 6 7: FOUR EXTRA SHAPES',w//2-225,base-54,11,MUTED)
-        y=base+70;bx=w//2-177
+        y=base+70;bx=w//2-203
         for i,(key,label,on) in enumerate([
             ('play','||' if model.playing else '>',model.playing),
             ('record','REC',model.recording),
             ('demo','DEMO',bool(music and music.playing and music.path==DEMO_PATH)),('score','LOCAL',demo),
-            ('grid','LOOP',self.show_grid),('export','SAVE',False),('load','LOAD',False)]):
+            ('grid','LOOP',self.show_grid),('surge','SURGE',renderer.climax.amount>.7),('export','SAVE',False),('load','LOAD',False)]):
             self.button(surf,key,label,(bx+i*52,y,45,28),on)
         # A crossfader changes both audio gain and the sculpture mixture.
         self.fader=pygame.Rect(w//2-155,h-55,310,20)
@@ -170,6 +170,7 @@ class Interface:
             lines=[
                 'A S D J K L   Six distinct 3D shapes + pitched/percussive sound.',
                 '4 5 6 7       Iris, corona, rosette, facet. F2: earlier study.',
+                'N / SURGE     Open a screen-spanning metallic crown; recedes naturally.',
                 'TAB           Select deck A or B. Each keeps its own form/loop.',
                 'TOUCH         Multiple fingers play independent voices together.',
                 'TURNTABLES    Drag around either disc to scratch forward/back.',

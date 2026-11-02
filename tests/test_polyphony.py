@@ -33,13 +33,37 @@ class PolyphonicTests(unittest.TestCase):
         stage=PolyphonicStage();stage.note(2)
         stage.time=1.;stage.levels=[.8,.7,.7]
         stage.note(0,source='TRACK');self.assertEqual(stage.base_family,2)
-        stage.time=3.;stage.note(0,source='TRACK')
+        stage.time=3.;stage.beat=6.;stage.note(0,source='TRACK')
         self.assertEqual(stage.base_family,7)
         stage.time=6.;stage.note(3,source='TRACK',follow=False)
         self.assertEqual(stage.base_family,7)
         model=Instrument();motion=MusicalMotion()
         for _ in range(200):stage.update(model,motion,1/60)
         self.assertEqual(stage.base_family,7,'No timer should select another shape')
+
+    def test_hats_and_offbeat_attacks_do_not_force_mechanical_shape_switches(self):
+        stage=PolyphonicStage();stage.set_base(2,duration=0.)
+        stage.time=3.;stage.levels=[.3,.8,.2];stage.beat=3.5
+        stage.note(3,.75,source='TRACK')
+        self.assertEqual(stage.base_family,2,'Offbeat should articulate without a whole-form change')
+        stage.beat=4.;stage.time=3.3;stage.note(5,.55,source='TRACK')
+        self.assertEqual(stage.base_family,2,'A hat should not select the full sculpture')
+        stage.time=3.7;stage.note(3,.95,source='TRACK')
+        self.assertEqual(stage.base_family,3)
+        self.assertLess(stage.base_duration,.5,'Strong accents should use a tempo-scaled response')
+
+    def test_strong_percussion_accent_can_reassemble_after_a_phrase(self):
+        stage=PolyphonicStage();stage.set_base(2,duration=0.)
+        stage.time=3.;stage.beat=4.;stage.levels=[.3,.8,.7]
+        stage.note(5,.95,source='TRACK')
+        self.assertEqual(stage.base_family,8)
+
+    def test_orbit_drag_holds_the_form_but_keeps_music_accents(self):
+        stage=PolyphonicStage();stage.set_base(2,duration=0.)
+        stage.time=3.;stage.beat=6.;stage.levels=[.3,.8,.2];stage.orbiting=True
+        stage.note(3,.95,source='TRACK')
+        self.assertEqual(stage.base_family,2)
+        self.assertEqual(len(stage.notes),2)
 
     def test_second_key_does_not_retarget_or_remove_first_animation(self):
         stage=PolyphonicStage();first=stage.note(0);stage.time=.3

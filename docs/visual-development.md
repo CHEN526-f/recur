@@ -1,6 +1,32 @@
 # Visual refinement — iteration log
 
-## Current: restore the ten keyed shapes — 2 November 2026
+## Current: layered portal and screen-spanning surge — 2 November 2026
+
+The author requested removal of A's single-band appearance and a dramatic
+screen-filling expansion inspired by the original references. A now selects
+PORTAL: nine nested crowns with increasing radii, staggered depth, five-lobed
+contours and alternating rotation. All other key constructions remain available.
+
+Musical climax envelopes reveal nine additional ordered crown layers around the
+selected core. The viewport opens to the window edges and the camera advances
+slightly. N / SURGE performs the same envelope manually; the existing Space
+brake/release remains. Geometry supplies the impact while the original metal,
+sparse glass, lighting and bloom are retained. The stage recedes with the phrase.
+
+The real OpenGL climax check rendered 1,150 frames and confirmed that lit pixels
+reach the edge strips: 0.0% in the quiet pose versus 58.5% at the peak. Near-white
+pixels occupied 0.09% of the image. These are image checks under the tested
+palette/view, not a guarantee for arbitrary camera positions or imported music.
+The actual peak render is included as `surge-preview.png`.
+
+The author's follow-up also replaces S's single strip with three layered fan
+groups. Canvas rotation now waits for drag intent and never selects a shape;
+short clicks play on release. Music form selection follows beat accents and
+spectral changes, while note detail continues between changes. Tempo and attack
+strength vary transition duration; the repeated generic intermediate assembly is
+attenuated. Automated mouse and music regressions accompany the updated preview.
+
+## Earlier: restore the ten keyed shapes — 2 November 2026
 
 The author rejected the fixed-base interaction below because the movement was too
 subtle and the ordinary keys appeared to keep the same construction. Normal
